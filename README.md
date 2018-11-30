@@ -1,8 +1,3 @@
----
-export_on_save:
-  phantomjs: "pdf"
----
-
 # secure-control-protocol - Work in progress
 
 ## Table of contents

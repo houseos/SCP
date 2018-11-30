@@ -669,7 +669,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 The full version of the license can be found in LICENSE.
 
-If you need a license for commercial use, please contact mailto:schilling.benjamin@delusionsoftware.de.
+If you need a license for commercial use, please contact [Benjamin Schilling](mailto:schilling.benjamin@delusionsoftware.de).
 
 ## Copyright
 Copyright (C) 2018 Benjamin Schilling

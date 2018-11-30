@@ -1,14 +1,10 @@
----
-export_on_save:
-  phantomjs: "pdf"
----
-
 # secure-control-protocol - Work in progress
 
 ## Table of contents
 
 - [secure-control-protocol - Work in progress](#secure-control-protocol---work-in-progress)
     - [Table of contents](#table-of-contents)
+    - [Hint](#hint)
     - [1. Architecture](#1-architecture)
     - [2. Provisioning of devices](#2-provisioning-of-devices)
     - [3. Discovery of devices](#3-discovery-of-devices)
@@ -38,6 +34,9 @@ export_on_save:
     - [Project Philosophy](#project-philosophy)
     - [License](#license)
     - [Copyright](#copyright)
+
+## Hint
+A PDF version of this README with all images is stored in the `./doc/` directory.
 
 ## 1. Architecture
 
@@ -198,9 +197,9 @@ end note
 
 ## 3. Discovery of devices
 
-The Android app is capable of discovering devices in a configurable home-network.
+The Android app is capable of discovering devices in a configurable network range.
 
-To do this the app  connects to the secure-control-discover-hello ressource of each IP addresses of the configured private IP address range.
+To do this the app  connects to the secure-control-discover-hello ressource of each IP addresses of the configured IP address range.
 
 The app stores the IP addresses of all devices which respond with a HTTP response 200 OK with information in the body.
 
@@ -242,24 +241,27 @@ Each SCP server has a preconfigured password which has to be changed when the fi
 
 The SCP server does not accept control messages if the configured password matches the preconfigured one.
 
-The messages are encrypted using AES-128-CBC with the shared secret.
+Additionally the password has the be 16 characters long.
+
+The messages are encrypted using AES-128-CBC with the shared secret and an IV which has to be fetched from the device before encypting the message.
+
+Nounce? 
 
 Currently not covered:
 - Hardware attacks (Read flash to get password)
-- Replay attacks (sequence number has to be introduced)
 
 
 ## 5. HTTP Ressources
 
 The device exposes the following HTTP ressources:
 ```
-http://destination/shutter-control
+http://device-ip/secure-control
 ```
 ```
-http://destination/shutter-control-discover-hello
+http://device-ip/secure-control/discover-hello
 ```
 ```
-http://destination/shutter-control-security-fetch-iv
+http://device-ip/secure-control/security-fetch-iv
 ```
 ## 6. REST Message Types
 
@@ -273,12 +275,12 @@ By this replay attacks are being avoided.
 
 For all encrypted messages the following HTTP ressource is used:
 ```
-http://destination/shutter-control
+http://device-ip/secure-control
 ```
 
 The data that shall be send to the device is send in the payload parameter.
 ```
-http://destination/shutter-control?payload=payload
+http://device-ip/secure-control?payload=payload
 ```
 
 
@@ -345,7 +347,7 @@ server --> client : Send response
 
 #### 6.1.1 discover-hello
 ```
-Ressource: http://destination/shutter-control-discover-hello?payload=payload
+Ressource: http://device-ip/secure-control/discover-hello?payload=payload
 ```
 payload: discover-hello
 
@@ -470,7 +472,7 @@ The security-fetch-iv message fetches the initialization vector from the device.
 
 Additionally the deviceID provided in the payload must match the configured device ID.
 ```
-Ressource: http://destination/shutter-control-security-fetch-iv
+Ressource: http://device-ip/secure-control/security-fetch-iv
 ```
 payload = deviceID
 
@@ -483,6 +485,7 @@ The payload of the response consists of a JSON representation of the following d
 ```
 {
     "type" : "security-fetch-iv",
+    "deviceId" : "device ID",
     "iv" : Stored initilization vector
 }
 ```
@@ -494,6 +497,9 @@ The security-pw-change message tells the device to change it's old password to t
 Additionally the deviceID provided in the payload must match the configured device ID.
 
 decrypted payload = deviceID:security-pw-change:new password
+
+Hint:
+The old password does not has to be send because it is used by the device for the encryption of the message.
 
 The encrypted payload of the response consists of a JSON representation of the following data:
 

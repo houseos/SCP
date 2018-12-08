@@ -26,7 +26,7 @@ void ScpCrypto::decrypt(char *enciphered, char *output, int lengthOfText,
   decoded = rbase64.result();
 
   // adjust lengthOfText to multiple of 16 bytes
-  bufferSize(enciphered, lengthOfText);
+  getBufferSize(enciphered, lengthOfText);
 
   // create aesDecryptor abject
   AES aesDecryptor(key, iv, AES::AES_MODE_128, AES::CIPHER_DECRYPT);
@@ -51,7 +51,7 @@ void ScpCrypto::generateHMAC(byte *message, uint32_t length, uint8_t *key,
   hmac.doFinal(authCode);
 }
 
-void ScpCrypto::bufferSize(char *text, int &length)
+void ScpCrypto::getBufferSize(char *text, int &length)
 {
   int i = strlen(text);
   int buf = round(i / BLOCK_SIZE) * BLOCK_SIZE;

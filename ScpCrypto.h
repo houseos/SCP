@@ -62,7 +62,7 @@ public:
  * @param text 
  * @param length 
  */
-  void bufferSize(char *text, int &length);
+  void getBufferSize(char *text, int &length);
 
   /**
  * @brief 

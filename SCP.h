@@ -51,6 +51,7 @@ private:
   ScpCrypto crypto;
   String deviceID = "";
   ESP8266WebServer *server;
+  String DEFAULT_PW = "123456789012456";
 
   std::function<void()> controlUpFunction;
   std::function<void()> controlDownFunction;

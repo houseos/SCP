@@ -36,7 +36,7 @@ void SCP::handleSecureControl()
 #endif
   // Set the encrypted text from the payload
   int lengthOfText = 0;
-  crypto.bufferSize((char *)encryptedText.c_str(), lengthOfText);
+  crypto.getBufferSize((char *)encryptedText.c_str(), lengthOfText);
   char encText[lengthOfText];
   memset(encText, 0, lengthOfText * sizeof(char));
   for (int i = 0; i < lengthOfText; i++)
@@ -46,13 +46,7 @@ void SCP::handleSecureControl()
 
   // Read the key from the EEPROM
   uint8_t key[BLOCK_SIZE];
-  memset(key, 0, BLOCK_SIZE * sizeof(uint8_t));
-  String pw = password.readPasswordFromEEPROM();
-  for (int i = 0; i < BLOCK_SIZE; i++)
-  {
-    char c = pw.charAt(i);
-    key[i] = c;
-  }
+  password.storePasswordInIntArray(key, BLOCK_SIZE);
 
   char output[lengthOfText];
   memset(output, 0, lengthOfText * sizeof(char)); // initialize with all 0

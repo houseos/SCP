@@ -16,7 +16,7 @@ Copyright (C) 2018 Benjamin Schilling
 #include "Arduino.h"
 #include "ScpDebug.h"
 
-#define  PW_LENGTH = 16;
+#define  PW_LENGTH 16
 
 class ScpPassword
 {
@@ -52,6 +52,8 @@ public:
    * @return String 
    */
   String readPasswordFromEEPROM();
+
+  void storePasswordInIntArray(uint8_t buffer[], uint8_t buffer_length);
 
 private:
  const String DEFAULT_PW = "1234567890123456";

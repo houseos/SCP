@@ -50,3 +50,13 @@ String ScpPassword::readPasswordFromEEPROM()
   }
   return password;
 }
+
+void ScpPassword::storePasswordInIntArray(uint8_t buffer[], uint8_t buffer_length) {
+  memset(buffer, 0, buffer_length);
+  String pw = readPasswordFromEEPROM();
+  for (int i = 0; i < buffer_length; i++)
+  {
+    char c = pw.charAt(i);
+    buffer[i] = c;
+  }
+}

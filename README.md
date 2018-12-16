@@ -106,11 +106,11 @@ client ..> storage : Store passwords
 
 ## 2. Provisioning of devices
 
-When the default password of the shutter-controller is set or no wifi credentials are provisioned the shutter-controller provides a Wifi Access Point using WPA2-PSK which can be accessed with the credentials defined in the annex. 
+When the default password of the shutter-controller is set or no wifi credentials are provisioned the shutter-controller provides a Wifi Access Point using WPA2-PSK which can be accessed with the credentials defined in the annex.
 
-When the Wifi Access Point is available the provisioning device connects to the wifi and the shutter-controller acts as a DHCP server and provides an IP address from a limited range to the device.
+When the Wifi Access Point is available the control device connects to the wifi and the shutter-controller acts as a DHCP server and provides an IP address from a small Class C IP subnet.
 
-Now the device can start the discovery of shutter-controllers in the limited range and will automatically set a new device password using the security-pw-change message. Afterwards the credentials, of the wifi the shutter-controller should operate in, are being supplied by the user and sent to the shutter-controller via the security-wifi-config message. 
+Now the control device can start the discovery of shutter-controller in the IP subnet. If the shutter-controller is found a new device password must be set. This can be done via the security-pw-change message (see #6.3.2 security-pw-change). Afterwards the credentials, of the wifi the shutter-controller should operate in, are being supplied by the user and sent to the shutter-controller via the security-wifi-config message. 
 
 When the shutter-controller receives a security-wifi-config message it tries to connect to the wifi and reponds with the result.
 

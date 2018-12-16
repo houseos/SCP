@@ -110,7 +110,7 @@ When the default password of the shutter-controller is set or no wifi credential
 
 When the Wifi Access Point is available the control device connects to the wifi and the shutter-controller acts as a DHCP server and provides an IP address from a small Class C IP subnet.
 
-Now the control device can start the discovery of shutter-controller in the IP subnet. If the shutter-controller is found a new device password must be set. This can be done via the security-pw-change message (see #6.3.2 security-pw-change). Afterwards the credentials, of the wifi the shutter-controller should operate in, are being supplied by the user and sent to the shutter-controller via the security-wifi-config message. 
+Now the control device can start the discovery of shutter-controller in the IP subnet. If the shutter-controller is found a new device password must be set. This can be done via the security-pw-change message (see #632 security-pw-change). Afterwards the credentials, of the wifi the shutter-controller should operate in, are being supplied by the user and sent to the shutter-controller via the security-wifi-config message. 
 
 When the shutter-controller receives a security-wifi-config message it tries to connect to the wifi and reponds with the result.
 

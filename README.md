@@ -110,11 +110,13 @@ When the default password of the shutter-controller is set or no wifi credential
 
 When the Wifi Access Point is available the control device connects to the wifi and the shutter-controller acts as a DHCP server and provides an IP address from a small Class C IP subnet.
 
-Now the control device can start the discovery of shutter-controller in the IP subnet. If the shutter-controller is found a new device password must be set. This can be done via the security-pw-change message (see #632 security-pw-change). Afterwards the credentials, of the wifi the shutter-controller should operate in, are being supplied by the user and sent to the shutter-controller via the security-wifi-config message. 
+Now the control device can start the discovery of shutter-controller in the IP subnet. If the shutter-controller is found a new shutter-control password must be set. This can be done via the [security-pw-change message](#632-security-pw-change). As a second step the credentials of the home network wifi the shutter-controller operates in should be supplied. The user sends a the [security-wifi-config message](#633-security-wifi-config) containing the encrypted credentials to the shutter-controller. 
 
-When the shutter-controller receives a security-wifi-config message it tries to connect to the wifi and reponds with the result.
+If a shutter-controller receives a valid [security-wifi-config message](#633-security-wifi-config) it tries to connect to the wifi and reponds with the result.
 
-Afterwards the user triggers the security-reset message to restart the shutter-controller and thus apply the configured settings. If the default password has been changed and the wifi credentials are provisined, the shutter-controller is started as a wifi client only.
+The third step is triggered by the [security-reset message](#635-security-restart) which restarts the shutter-controller and thus applies the configured settings. If the shutter-controler default password and the wifi credentials are changed / provisined, the shutter-controller is started as in the wifi client only mode.
+
+*__Note:__* If the connection to the supplied home network wifi fails, the shutter-controller acts as a wifi access point in order to receive the new home network credentials. But in contrast to the beginning of this chapter the password for this wifi will now be the provisioned shutter-controller password.
 
 ```puml
 

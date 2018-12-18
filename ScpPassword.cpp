@@ -43,7 +43,7 @@ void ScpPassword::writePasswordToEEPROM(String password)
 
 String ScpPassword::readPasswordFromEEPROM()
 {
-  String password;
+  String password = "";
   for (int i = 1; i < 17; i++)
   {
     password = password + char(EEPROM.read(i));

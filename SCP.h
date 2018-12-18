@@ -15,6 +15,7 @@ Copyright (C) 2018 Benjamin Schilling
 #include "ScpDeviceID.h"
 #include "ScpPassword.h"
 #include "ScpCrypto.h"
+#include "ScpMessageFactory.h"
 
 #include "ScpDebug.h"
 
@@ -49,9 +50,10 @@ private:
   ScpPassword password;
   ScpDeviceID dID;
   ScpCrypto crypto;
+  ScpMessageFactory messageFactory;
   String deviceID = "";
   ESP8266WebServer *server;
-  String DEFAULT_PW = "123456789012456";
+  String DEFAULT_PW = "1234567890123456";
 
   std::function<void()> controlUpFunction;
   std::function<void()> controlDownFunction;
@@ -89,6 +91,7 @@ private:
    * 
    */
   void sendMalformedPayload();
+
 };
 
 #endif

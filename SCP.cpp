@@ -69,16 +69,13 @@ void SCP::handleSecureControl()
       // control up
       if (!(DEFAULT_PW.equals(password.readPasswordFromEEPROM())))
       {
-        String answer =
-            "{ \"type\" : \"control-up\", \"deviceId\" : " + deviceID +
-            ", \"status\" : 1 }";
+        String answer = messageFactory.createMessageControlUp(deviceID, "up");
+
         server->send(200, "application/json", answer);
       }
       else
       {
-        String answer =
-            "{ \"type\" : \"control-up\", \"deviceId\" : " + deviceID +
-            ", \"status\" : error }";
+        String answer = messageFactory.createMessageControlUp(deviceID, "error");
         server->send(200, "application/json", answer);
       }
     }
@@ -88,16 +85,12 @@ void SCP::handleSecureControl()
       if (!(DEFAULT_PW.equals(password.readPasswordFromEEPROM())))
       {
         // control down
-        String answer =
-            "{ \"type\" : \"control-down\", \"deviceId\" : " + deviceID +
-            ", \"status\" : 1 }";
+        String answer = messageFactory.createMessageControlDown(deviceID, "down");
         server->send(200, "application/json", answer);
       }
       else
       {
-        String answer =
-            "{ \"type\" : \"control-down\", \"deviceId\" : " + deviceID +
-            ", \"status\" : error }";
+        String answer = messageFactory.createMessageControlDown(deviceID, "error");
         server->send(200, "application/json", answer);
       }
     }
@@ -107,16 +100,12 @@ void SCP::handleSecureControl()
       if (!(DEFAULT_PW.equals(password.readPasswordFromEEPROM())))
       {
         // control stop
-        String answer =
-            "{ \"type\" : \"control-stop\", \"deviceId\" : " + deviceID +
-            ", \"status\" : 1 }";
+        String answer = messageFactory.createMessageControlStop(deviceID, "stop");
         server->send(200, "application/json", answer);
       }
       else
       {
-        String answer =
-            "{ \"type\" : \"control-stop\", \"deviceId\" : " + deviceID +
-            ", \"status\" : error }";
+        String answer = messageFactory.createMessageControlStop(deviceID, "error");
         server->send(200, "application/json", answer);
       }
     }
@@ -125,17 +114,14 @@ void SCP::handleSecureControl()
       // control stop
       if (!(DEFAULT_PW.equals(password.readPasswordFromEEPROM())))
       {
-        // control stop
-        String answer =
-            "{ \"type\" : \"control-status\", \"deviceId\" : " + deviceID +
-            ", \"status\" : 1 }";
+        // control status
+        String answer = messageFactory.createMessageControlStatus(deviceID, "status");
+
         server->send(200, "application/json", answer);
       }
       else
       {
-        String answer =
-            "{ \"type\" : \"control-status\", \"deviceId\" : " + deviceID +
-            ", \"status\" : error }";
+        String answer = messageFactory.createMessageControlStatus(deviceID, "error");
         server->send(200, "application/json", answer);
       }
     }
@@ -154,9 +140,8 @@ void SCP::handleSecureControl()
       Serial.println(newPassword);
 #endif
       password.writePasswordToEEPROM(String(newPassword));
-      String answer =
-          "{ \"type\" : \"security-pw-change\", \"result\" : " + String(1) +
-          " }";
+      String answer = messageFactory.createMessageSecurityPwChange("done");
+
       server->send(200, "application/json", answer);
     }
     else if (messageType.startsWith("security-wifi-config"))
@@ -171,9 +156,8 @@ void SCP::handleSecureControl()
     else if (messageType.startsWith("security-reset-to-default"))
     {
       password.setDefaultPassword();
-      String answer =
-          "{ \"type\" : \"security-reset-to-default\", \"result\" : " +
-          String(1) + " }";
+      String answer = messageFactory.createMessageSecurityResetToDefault("done");
+
       server->send(200, "application/json", answer);
     }
     else if (messageType.startsWith("security-restart"))
@@ -201,8 +185,8 @@ void SCP::handleSecurityFetchIV()
 
     String ivString = crypto.getIVString();
 
-    String answer =
-        "{ \"type\" : \"security-fetch-iv\",  \"iv\" :\"" + ivString + "\"  }";
+    String answer = messageFactory.createMessageSecurityFetchIV(deviceID, ivString);
+
     server->send(200, "application/json", answer);
   }
   else
@@ -228,7 +212,7 @@ void SCP::handleDiscoverHello()
   {
     String defaultPWresult;
 #ifdef DEBUG
-    Serial.println("  " + password.readPasswordFromEEPROM());
+    Serial.println("Configured Password: " + password.readPasswordFromEEPROM());
 #endif
     if (DEFAULT_PW.equals(password.readPasswordFromEEPROM()))
     {
@@ -328,7 +312,6 @@ void SCP::handleNotFound()
 
 void SCP::handleClient() { server->handleClient(); }
 
-
 void SCP::init()
 {
   crypto.setIV();
@@ -340,16 +323,17 @@ void SCP::init()
 
   if (!dID.isDeviceIDSet())
   {
-
     dID.setDeviceID();
   }
-
   deviceID = dID.readDeviceIDFromEEPROM();
+#ifdef DEBUG
+  Serial.println("DeviceID: " + deviceID);
+#endif
 
   server->on("/secure-control", std::bind(&SCP::handleSecureControl, this));
-  server->on("/secure-control-security-fetch-iv",
+  server->on("/secure-control/security-fetch-iv",
              std::bind(&SCP::handleSecurityFetchIV, this));
-  server->on("/secure-control-discover-hello",
+  server->on("/secure-control/discover-hello",
              std::bind(&SCP::handleDiscoverHello, this));
   server->onNotFound(std::bind(&SCP::handleNotFound, this));
   server->begin();
@@ -359,14 +343,19 @@ void SCP::init()
 #endif
 }
 
-void SCP::registerControlUpFunction(std::function<void()> fun){
- controlUpFunction = fun;
+
+
+void SCP::registerControlUpFunction(std::function<void()> fun)
+{
+  controlUpFunction = fun;
 }
 
-void SCP::registerControlDownFunction(std::function<void()> fun){
+void SCP::registerControlDownFunction(std::function<void()> fun)
+{
   controlDownFunction = fun;
 }
 
-void SCP::registerControlStopFunction(std::function<void()> fun){
+void SCP::registerControlStopFunction(std::function<void()> fun)
+{
   controlStopFunction = fun;
 }

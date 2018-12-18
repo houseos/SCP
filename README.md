@@ -387,7 +387,7 @@ The deviceID provided in the payload must match the configured device ID.
 
 The IV provided in the payload must match (current_controller_IV-1).
 
-The encoded_data payload is created according to [REST message types and encoding](#6-REST-Message-Types) using:
+The encoded_data payload is created according to [REST message types and encoding](#6-rest-message-types) using:
 message_type=control-up
 
 The encrypted payload of the response consists of a JSON representation of the following data:
@@ -419,7 +419,7 @@ The deviceID provided in the payload must match the configured device ID.
 
 The IV provided in the payload must match (current_controller_IV-1).
 
-The encoded_data payload is created according to [REST message types and encoding](#6-REST-Message-Types) using:
+The encoded_data payload is created according to [REST message types and encoding](#6-rest-message-types) using:
 message_type=control-down
 
 The encrypted payload of the response consists of a JSON representation of the following data:
@@ -457,7 +457,7 @@ The deviceID provided in the payload must match the configured device ID.
 
 The IV provided in the payload must match (current_controller_IV-1).
 
-The encoded_data payload is created according to [REST message types and encoding](#6-REST-Message-Types) using:
+The encoded_data payload is created according to [REST message types and encoding](#6-rest-message-types) using:
 message_type=control-stop
 
 The encrypted payload of the response consists of a JSON representation of the following data:
@@ -494,7 +494,7 @@ The deviceID provided in the payload must match the configured device ID.
 
 The IV provided in the payload must match (current_controller_IV-1).
 
-The encoded_data payload is created according to [REST message types and encoding](#6-REST-Message-Types) using:
+The encoded_data payload is created according to [REST message types and encoding](#6-rest-message-types) using:
 message_type=control-status
 
 The encrypted payload of the response consists of a JSON representation of the following data:
@@ -503,12 +503,12 @@ The encrypted payload of the response consists of a JSON representation of the f
 | -------- | -----------------------  |
 | type     | control-status           |
 | deviceId | device ID                |
-| status   | neutral / status / error |
+| status   | neutral / up / down / error |
 ```
 {
     "type" : "control-status",
     "deviceId" : "device ID",
-    "status" : "neutral" | "status" | "error"
+    "status" : "neutral" | up | down | "error"
 }
 ```
 The status vaules have the following meaning:
@@ -530,8 +530,8 @@ The security-fetch-iv message fetches the initialization vector from the device.
 
 The deviceID provided in the payload must match the configured device ID.
 
-The encoded_data payload is created according to [REST message types and encoding](#6-REST-Message-Types) using:
-message_type=
+The encoded_data payload is created according to [REST message types and encoding](#6-rest-message-types) using:
+message_type =
 encoded_data = deviceID
 
 The unencrypted payload of the response consists of a JSON representation of the following data:

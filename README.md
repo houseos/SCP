@@ -106,15 +106,17 @@ client ..> storage : Store passwords
 
 ## 2. Provisioning of devices
 
-When the default password of the shutter-controller is set or no wifi credentials are provisioned the shutter-controller provides a Wifi Access Point using WPA2-PSK which can be accessed with the credentials defined in the annex. 
+When the default password of the shutter-controller is set or no wifi credentials are provisioned the shutter-controller provides a Wifi Access Point using WPA2-PSK which can be accessed with the [default credentials from the annex](#81-default-credentials).
 
-When the Wifi Access Point is available the provisioning device connects to the wifi and the shutter-controller acts as a DHCP server and provides an IP address from a limited range to the device.
+When the Wifi Access Point is available the control device connects to the wifi and the shutter-controller acts as a DHCP server and provides an IP address from a small Class C IP subnet.
 
-Now the device can start the discovery of shutter-controllers in the limited range and will automatically set a new device password using the security-pw-change message. Afterwards the credentials, of the wifi the shutter-controller should operate in, are being supplied by the user and sent to the shutter-controller via the security-wifi-config message. 
+Now the control device can start the discovery of shutter-controller in the IP subnet. If the shutter-controller is found a new shutter-control password must be set. This can be done via the [security-pw-change message](#632-security-pw-change). As a second step the credentials of the home network wifi the shutter-controller operates in should be supplied. The user sends a the [security-wifi-config message](#633-security-wifi-config) containing the encrypted credentials to the shutter-controller. 
 
-When the shutter-controller receives a security-wifi-config message it tries to connect to the wifi and reponds with the result.
+If a shutter-controller receives a valid [security-wifi-config message](#633-security-wifi-config) it tries to connect to the wifi and reponds with the result.
 
-Afterwards the user triggers the security-reset message to restart the shutter-controller and thus apply the configured settings. If the default password has been changed and the wifi credentials are provisined, the shutter-controller is started as a wifi client only.
+The third step is triggered by the [security-reset message](#635-security-restart) which restarts the shutter-controller and thus applies the configured settings. If the shutter-controller default password and the wifi credentials are changed / provisined, the shutter-controller is started as in the wifi client only mode.
+
+*__Note:__* If the connection to the supplied home network wifi fails, the shutter-controller acts as a wifi access point in order to receive the new home network credentials. But in contrast to the beginning of this chapter the password for this wifi will now be the provisioned shutter-controller password.
 
 ```puml
 
@@ -197,9 +199,9 @@ end note
 
 ## 3. Discovery of devices
 
-The Android app is capable of discovering devices in a configurable network range.
+The Android app acts as a control device and is capable of discovering devices in the local subnet network range.
 
-To do this the app  connects to the secure-control-discover-hello ressource of each IP addresses of the configured IP address range.
+To do this the app connects to the secure-control-discover-hello ressource of each IP addresses of the configured IP address range.
 
 The app stores the IP addresses of all devices which respond with a HTTP response 200 OK with information in the body.
 
@@ -235,25 +237,27 @@ webserver --> client : Respond with HTTP 404 Not found
 
 ## 4. Security
 
-The security is based on pre-shared secrets.
+The security is based on pre-shared secrets. Each device has its own secret. The secret is only shared between the shutter-controller and the control device(s).
 
-Each SCP server has a preconfigured password which has to be changed when the first connection is established.
+Each shutter-controller has a preconfigured password which has to be changed when the shutter-controller is first accessed. The shutter-controller does __not__ accept any [control messages](#62-control-messages) or [security messages](#63-security-messages) (besides the [security-pw-change message](#632-security-pw-change)) if the current shutter-controller password matches the [default password from the annex](#811-default-device-password).
 
-The SCP server does not accept control messages if the configured password matches the preconfigured one.
+The password has the be 16 characters long. This ensures a adequate security due to the large key space. The password will usually not be used by a human user. The secret is set by the controller device and sored in the shutter-controller. Therefore the length limitation does not pose a usability problem.   
 
-Additionally the password has the be 16 characters long.
+All (except for [6.1.1 discover-hello](#611-discover-hello)) exchanged messages are encrypted. The methode used is AES-128-CBC with the shared password, a nonce and an initialization vector (IV).
 
-The messages are encrypted using AES-128-CBC with the shared secret and an IV which has to be fetched from the device before encypting the message.
+The IV shall prevent replay attacks and needs to be fetched from the shutter-controller by the control device for every single message before encrypting it. The correctness of the supplied IV of each message is checked by the shutter-controller.
 
-Nounce? 
+To prevent attacks on the content / password of the exchanged messages an additional measure is taken. Every message content is augumented by a generated 256 bit random number. This number is generated by the sender of the message. It is added at the beginning of the message contents. 
 
-Currently not covered:
-- Hardware attacks (Read flash to get password)
+*__Currently not covered:__*
+
+No hardware attacks are currently considered. The flash memory of the shutter-controller stores the shutter-controller password which could be read and missused. This attack is considered to be unlikely and of limited use only since every device has a seperate password. Never the less any ideas / comments on this issue are very welcome. 
 
 
 ## 5. HTTP Ressources
 
 The device exposes the following HTTP ressources:
+
 ```
 http://device-ip/secure-control
 ```
@@ -263,34 +267,32 @@ http://device-ip/secure-control/discover-hello
 ```
 http://device-ip/secure-control/security-fetch-iv
 ```
+
 ## 6. REST Message Types
 
-The devices waits for HTTP-GET messages with the Content-Type application/x-www-form-urlencoded.
+The shutter-controller waits for HTTP-GET messages with the Content-Type application/x-www-form-urlencoded.
 
-Except for the discover messages all payloads are encrypted with the configured password for the device using AES-128-CBC with PKCS5 Padding.
+Almost all messages are encrypted, see [security chapter](#4-security) for details on the algorithms and exceptions.
 
-The initialization vector (henceforth IV) used for the encryption is being generated on start-up by the device.
-It is being fetched from the client by using the security-fetch-iv message before sending the first message and incremented by the device afterwards.
-By this replay attacks are being avoided.
+The initialization vector (IV) used for replay protection is randomly generated on shutter-controller start-up. It is being fetched from the control device by using the security-fetch-iv message before sending a message to the shutter-controller. The IV is incremented by the shutter-controller after every [security-fetch-iv message](#631-security-fetch-iv).
 
 For all encrypted messages the following HTTP ressource is used:
 ```
 http://device-ip/secure-control
 ```
 
-The data that shall be send to the device is send in the payload parameter.
+The data send to the shutter-controller is encoded in the payload parameter.
 ```
-http://device-ip/secure-control?payload=payload
+http://device-ip/secure-control?payload=encoded_data
 ```
 
-
-The payload consists of the base64 and afterwards urlencoded encrypted message.
+The encoded_data consists of the base64 and urlencoded encrypted message.
 ```
-payload = urlencode(base64(encrypted message))
+encoded_data = urlencode(base64(encrypted_message))
 ```
-The encrypted message consists of the device ID of the targeted device and the type of the message. The device ID and the type are being concetenated seperated by a colon and encrypted using AES-128-CBC afterwards using the IV and the password of the target device.
+The encrypted_message consists of a NONCE, the device ID of the shutter-controller, the IV and the type of the message. The IV, the device ID and the type are being concetenated. As seperator a colon is used. The message is then encrypted using the NONCE and the shutter-controller password.
 ```
-encrypted message = AES-128-CBC(deviceID + ":" + message type, password))
+encrypted_message = NONCE + encrypt(IV + ":" + deviceID + ":" + message_type, NONCE, password)
 ```
 
 All messages except for the discover-hello message, respond with a HTTP 200 OK message containing a JSON object with the encrypted payload:
@@ -347,26 +349,25 @@ server --> client : Send response
 
 #### 6.1.1 discover-hello
 ```
-Ressource: http://device-ip/secure-control/discover-hello?payload=payload
+Ressource: http://device-ip/secure-control/discover-hello?payload=discover-hello
 ```
-payload: discover-hello
 
-The discover-hello message is sent to all IP addresses of the subnet to determine wether the device is a shutter-control device, it is the only message being sent without encryption. If the device is a shutter-control device it responds with a HTTP 200 OK message containing a JSON representation of the following information.
+The discover-hello message is sent to all IP addresses of the home network subnet to determine which IP addresses beloang to a shutter-controller. It is the only message being sent without encryption. If the device is a shutter-controller it responds with a HTTP 200 OK message containing a JSON representation of the following information.
 
 ##### Variables
 
-| Key                     | Possible values                    |
-| ----------------------- | ---------------------------------- |
-| type                    | discover-response                  |
-| device-id               | device id (16 byte)                |
-| device-type             | shutter-control                    |
-| current password number | number of password changes         |
+| Key                     | Possible values                          |
+| ----------------------- | ----------------------------------       |
+| type                    | discover-response                        |
+| device-id               | device id (16 byte)                      |
+| device-type             | shutter-controller                       |
+| current password number | number of password changes, 0 is default |
 | hmac                    | Keyed-Hashed Massage Authentication Code |
 ```
 {
     "type" : "discover-response",
     "deviceId" : "device ID",
-    "deviceType" : "shutter-control",
+    "deviceType" : "shutter-controller",
     "currentPasswordNumber" : number of password changes   ,
     "hmac" : Keyed-Hashed Massage Authentication Code
 }
@@ -375,33 +376,51 @@ The discover-hello message is sent to all IP addresses of the subnet to determin
 
 #### 6.2.1 control-up
 
-The control-up message tells the shutters to open, but only if the password has been changed.
+Ressource:
+```
+http://device-ip/secure-control?payload=encoded_data
+```
 
-Additionally the deviceID provided in the payload must match the configured device ID.
+The control-up message tells the shutter-controller to open.
 
-decrypted payload: deviceID:control-up
+The deviceID provided in the payload must match the configured device ID.
+
+The IV provided in the payload must match (current_controller_IV-1).
+
+The encoded_data payload is created according to [REST message types and encoding](#6-REST-Message-Types) using:
+message_type=control-up
 
 The encrypted payload of the response consists of a JSON representation of the following data:
 
-| Key      | Possible values     |
-| -------- | ------------------- |
-| type     | control-up          |
-| deviceId | device ID           |
+| Key      | Possible values      |
+| -------- | -------------------  |
+| type     | control-up           |
+| deviceId | device ID            |
 | status   | neutral / up / error |
 ```
 {
     "type" : "control-up",
     "deviceId" : "device ID",
-    "status" : neutral / up / error
+    "status" : "neutral" | "up" | "error"
 }
 ```
+The status vaules have the following meaning:
+| status    | description            |
+| --------- | ---------------------- |
+| "neutral" | ???                    |
+| "up"      | ???                    |
+| "error"   | ???                    |
+
 #### 6.2.2 control-down
 
-The control-down message tells the shutters to close, but only if the password has been changed.
+The control-down message tells the shutter-controller to close.
 
-Additionally the deviceID provided in the payload must match the configured device ID.
+The deviceID provided in the payload must match the configured device ID.
 
-decrypted payload: deviceID:control-down
+The IV provided in the payload must match (current_controller_IV-1).
+
+The encoded_data payload is created according to [REST message types and encoding](#6-REST-Message-Types) using:
+message_type=control-down
 
 The encrypted payload of the response consists of a JSON representation of the following data:
 
@@ -414,74 +433,113 @@ The encrypted payload of the response consists of a JSON representation of the f
 {
     "type" : "control-down",
     "deviceId" : "device ID",
-    "status" : neutral / down / error
+    "status" : "neutral" | "down" | "error"
 }
 ```
+The status vaules have the following meaning:
+| status    | description            |
+| --------- | ---------------------- |
+| "neutral" | ???                    |
+| "down"    | ???                    |
+| "error"   | ???                    |
+
 
 #### 6.2.3 control-stop
 
-The control-stop message tells the shutters to stop, but only if the password has been changed.
+Ressource:
+```
+http://device-ip/secure-control?payload=encoded_data
+```
 
-Additionally the deviceID provided in the payload must match the configured device ID.
+The control-stop message tells the shutter-controller to stop.
 
-decrypted payload: deviceID:control-stop
+The deviceID provided in the payload must match the configured device ID.
+
+The IV provided in the payload must match (current_controller_IV-1).
+
+The encoded_data payload is created according to [REST message types and encoding](#6-REST-Message-Types) using:
+message_type=control-stop
 
 The encrypted payload of the response consists of a JSON representation of the following data:
 
-| Key      | Possible values       |
-| -------- | --------------------- |
-| type     | control-stop          |
-| deviceId | device ID             |
+| Key      | Possible values        |
+| -------- | ---------------------  |
+| type     | control-stop           |
+| deviceId | device ID              |
 | status   | neutral / stop / error |
 ```
 {
     "type" : "control-stop",
     "deviceId" : "device ID",
-    "status" : neutral / stop / error
+    "status" : "neutral" | "stop" | "error"
 }
 ```
+The status vaules have the following meaning:
+| status    | description            |
+| --------- | ---------------------- |
+| "neutral" | ???                    |
+| "stop"    | ???                    |
+| "error"   | ???                    |
 
 #### 6.2.4 control-status
 
-The control-status message return the current status of the shutters to the client, but only if the password has been changed.
+Ressource:
+```
+http://device-ip/secure-control?payload=encoded_data
+```
 
-Additionally the deviceID provided in the payload must match the configured device ID.
+The control-status message returns the current status of the shutter-controller to the control device.
 
-decrypted payload: deviceID:control-status
+The deviceID provided in the payload must match the configured device ID.
+
+The IV provided in the payload must match (current_controller_IV-1).
+
+The encoded_data payload is created according to [REST message types and encoding](#6-REST-Message-Types) using:
+message_type=control-status
 
 The encrypted payload of the response consists of a JSON representation of the following data:
 
-| Key      | Possible values         |
-| -------- | ----------------------- |
-| type     | control-status          |
-| deviceId | device ID               |
+| Key      | Possible values          |
+| -------- | -----------------------  |
+| type     | control-status           |
+| deviceId | device ID                |
 | status   | neutral / status / error |
 ```
 {
     "type" : "control-status",
     "deviceId" : "device ID",
-    "status" : neutral / status / error
+    "status" : "neutral" | "status" | "error"
 }
 ```
+The status vaules have the following meaning:
+| status    | description            |
+| --------- | ---------------------- |
+| "neutral" | ???                    |
+| "status"  | ???                    |
+| "error"   | ???                    |
 
 ### 6.3 Security messages
 
 #### 6.3.1 security-fetch-iv
-
-The security-fetch-iv message fetches the initialization vector from the device. The message and response are not encrypted as the IV has not to be secret.
-
-Additionally the deviceID provided in the payload must match the configured device ID.
+Ressource:
 ```
-Ressource: http://device-ip/secure-control/security-fetch-iv
+http://device-ip/secure-control/security-fetch-iv?payload=encoded_data
 ```
-payload = deviceID
 
-The payload of the response consists of a JSON representation of the following data:
+The security-fetch-iv message fetches the initialization vector from the device.
+
+The deviceID provided in the payload must match the configured device ID.
+
+The encoded_data payload is created according to [REST message types and encoding](#6-REST-Message-Types) using:
+message_type=
+encoded_data = deviceID
+
+The unencrypted payload of the response consists of a JSON representation of the following data:
 
 | Key  | Possible values             |
 | ---- | --------------------------- |
-| type | security-fetch-iv        |
-| iv   | Stored initilization vector |
+| type | security-fetch-iv           |
+| iv   | current shutter-controller initilization vector |
 ```
 {
     "type" : "security-fetch-iv",

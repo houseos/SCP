@@ -13,7 +13,7 @@ ScpMessageFactory::ScpMessageFactory()
 {
 }
 
-//Control Message
+//Control Messages
 String ScpMessageFactory::createMessageControlUp(String deviceID, String status)
 {
     String message = "{ \"type\" : \"control-up\", \"deviceId\" : " + deviceID +
@@ -63,7 +63,15 @@ String ScpMessageFactory::createMessageSecurityResetToDefault(String status)
 }
 
 //Discovery Messages
-String ScpMessageFactory::createMessageDiscoverHello()
+String ScpMessageFactory::createMessageDiscoverHello(String deviceID, String ipAddress, String defaultPWresult, String hmac)
 {
-    return "";
+    String message = "{ \"type\" : \"discover-response\",";
+    message += "\"deviceId\" : \"" + deviceID + "\",";
+    message += "\"deviceType\" : \"secure-control\",";
+    message += "\"ipAddress\" : \"" + ipAddress + "\" ,";
+    message += "\"defaultPw\" :\"" + defaultPWresult + "\",";
+    message += "\"hmac\" :\"";
+    message += hmac;
+    message += "\" }";
+    return message;
 }

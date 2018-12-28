@@ -21,9 +21,8 @@ SCP::SCP()
 
 void SCP::handleSecureControl()
 {
-#ifdef DEBUG
-  Serial.println("handleClient");
-#endif
+  scpDebug.println("handleClient");
+
   String payload = server->arg("payload");
 
   // The payload is an encrypted message
@@ -31,9 +30,9 @@ void SCP::handleSecureControl()
 
   // substring from colon is encrypted text
   encryptedText = payload;
-#ifdef DEBUG
-  Serial.println("encoded enc text: " + encryptedText);
-#endif
+
+  scpDebug.println("encoded enc text: " + encryptedText);
+
   // Set the encrypted text from the payload
   int lengthOfText = 0;
   crypto.getBufferSize((char *)encryptedText.c_str(), lengthOfText);
@@ -54,9 +53,9 @@ void SCP::handleSecureControl()
   // decrypt the message
   crypto.decrypt(encText, output, lengthOfText, key, crypto.getIVPlain());
   String out = String(output);
-#ifdef DEBUG
-  Serial.println(out);
-#endif
+
+  scpDebug.println(out);
+
   String receivedDeviceID = out.substring(0, deviceID.length());
   String messageType =
       out.substring(deviceID.length() + 1, deviceID.length() + 11);
@@ -136,9 +135,8 @@ void SCP::handleSecureControl()
       }
       // store new password
 
-#ifdef DEBUG
-      Serial.println(newPassword);
-#endif
+      scpDebug.println(newPassword);
+
       password.writePasswordToEEPROM(String(newPassword));
       String answer = messageFactory.createMessageSecurityPwChange("done");
 
@@ -169,14 +167,13 @@ void SCP::handleSecureControl()
 
 void SCP::handleSecurityFetchIV()
 {
-#ifdef DEBUG
-  Serial.println("  Message: SecurityFetchIV");
-#endif
+  scpDebug.println("  Message: SecurityFetchIV");
+
   String payload = server->arg("payload");
-#ifdef DEBUG
-  Serial.println("  Payload:" + payload);
-  Serial.println("  Device ID:" + deviceID);
-#endif
+
+  scpDebug.println("  Payload:" + payload);
+  scpDebug.println("  Device ID:" + deviceID);
+
   if (payload.startsWith(deviceID))
   {
     String receivedDeviceID = payload.substring(0, deviceID.length());
@@ -193,27 +190,24 @@ void SCP::handleSecurityFetchIV()
   {
     sendMalformedPayload();
   }
-#ifdef DEBUG
-  Serial.println("  Message End: SecurityFetchIV");
-#endif
+  scpDebug.println("  Message End: SecurityFetchIV");
 }
 
 void SCP::handleDiscoverHello()
 {
-#ifdef DEBUG
-  Serial.println("  Message: DiscoverHello");
-#endif
+  scpDebug.println("  Message: DiscoverHello");
+
   String payload = server->arg("payload");
-#ifdef DEBUG
-  Serial.println("  Payload:" + payload);
-#endif
+
+  scpDebug.println("  Payload:" + payload);
+
   // handle discover-hello message
   if (payload.equals("discover-hello"))
   {
     String defaultPWresult;
-#ifdef DEBUG
-    Serial.println("Configured Password: " + password.readPasswordFromEEPROM());
-#endif
+
+    scpDebug.println("Configured Password: " + password.readPasswordFromEEPROM());
+
     if (DEFAULT_PW.equals(password.readPasswordFromEEPROM()))
     {
       defaultPWresult = "true";
@@ -225,9 +219,9 @@ void SCP::handleDiscoverHello()
 
     String stringForHMAC = "discover-response" + deviceID + "secure-control" +
                            WiFi.localIP().toString() + defaultPWresult + "\0";
-#ifdef DEBUG
-    Serial.println("  ToHash: " + stringForHMAC);
-#endif
+
+    scpDebug.println("  ToHash: " + stringForHMAC);
+
     uint8_t key[BLOCK_SIZE];
     memset(key, 0, BLOCK_SIZE * sizeof(uint8_t));
     String pw = password.readPasswordFromEEPROM();
@@ -246,31 +240,23 @@ void SCP::handleDiscoverHello()
     crypto.generateHMAC(buffer, stringForHMAC.length(), key, hmac);
     rbase64.encode(hmac, SHA256HMAC_SIZE);
 
-    String answer = "{ \"type\" : \"discover-response\",";
-    answer += "\"deviceId\" : \"" + deviceID + "\",";
-    answer += "\"deviceType\" : \"secure-control\",";
-    answer += "\"ipAddress\" : \"" + WiFi.localIP().toString() + "\" ,";
-    answer += "\"defaultPw\" :\"" + defaultPWresult + "\",";
-    answer += "\"hmac\" :\"";
-    answer += rbase64.result();
-    answer += "\" }";
+    String answer = messageFactory.createMessageDiscoverHello(deviceID, WiFi.localIP().toString(), defaultPWresult, rbase64.result());
     server->send(200, "application/json", answer);
-    Serial.println("  discover-response send: " + answer);
+
+    scpDebug.println("  discover-response send: " + answer);
   }
   else
   {
     sendMalformedPayload();
   }
-#ifdef DEBUG
-  Serial.println("  Message End: DiscoverHello");
-#endif
+
+  scpDebug.println("  Message End: DiscoverHello");
 }
 
 void SCP::sendMalformedPayload()
 {
-#ifdef DEBUG
-  Serial.println("    Error: MalformedPayload");
-#endif
+  scpDebug.println("    Error: MalformedPayload");
+
   String message = "Malformed payload\n\n";
   for (uint8_t i = 0; i < server->args(); i++)
   {
@@ -278,16 +264,13 @@ void SCP::sendMalformedPayload()
   }
 
   server->send(404, "text/plain", message);
-#ifdef DEBUG
-  Serial.println("    Error End: MalformedPayload");
-#endif
+
+  scpDebug.println("    Error End: MalformedPayload");
 }
 
 void SCP::handleNotFound()
 {
-#ifdef DEBUG
-  Serial.println("    Error: HandleNotFound");
-#endif
+  scpDebug.println("    Error: HandleNotFound");
 
   String message = "File Not Found\n\n";
   message += "URI: ";
@@ -305,9 +288,7 @@ void SCP::handleNotFound()
 
   server->send(404, "text/plain", message);
 
-#ifdef DEBUG
-  Serial.println("    Error End: HandleNotFound");
-#endif
+  scpDebug.println("    Error End: HandleNotFound");
 }
 
 void SCP::handleClient() { server->handleClient(); }
@@ -326,9 +307,8 @@ void SCP::init()
     dID.setDeviceID();
   }
   deviceID = dID.readDeviceIDFromEEPROM();
-#ifdef DEBUG
-  Serial.println("DeviceID: " + deviceID);
-#endif
+
+  scpDebug.println("DeviceID: " + deviceID);
 
   server->on("/secure-control", std::bind(&SCP::handleSecureControl, this));
   server->on("/secure-control/security-fetch-iv",
@@ -338,12 +318,8 @@ void SCP::init()
   server->onNotFound(std::bind(&SCP::handleNotFound, this));
   server->begin();
 
-#ifdef DEBUG
-  Serial.println("HTTP server started");
-#endif
+  scpDebug.println("HTTP server started");
 }
-
-
 
 void SCP::registerControlUpFunction(std::function<void()> fun)
 {

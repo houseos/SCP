@@ -3,40 +3,54 @@
 ## Table of contents
 
 - [secure-control-protocol - Work in progress](#secure-control-protocol---work-in-progress)
-    - [Table of contents](#table-of-contents)
-    - [Hint](#hint)
-    - [1. Architecture](#1-architecture)
-    - [2. Provisioning of devices](#2-provisioning-of-devices)
-    - [3. Discovery of devices](#3-discovery-of-devices)
-    - [4. Security](#4-security)
-    - [5. HTTP Ressources](#5-http-ressources)
-    - [6. REST Message Types](#6-rest-message-types)
-        - [6.1 Discover message types](#61-discover-message-types)
-            - [6.1.1 discover-hello](#611-discover-hello)
-                - [Variables](#variables)
-        - [6.2 Control messages](#62-control-messages)
-            - [6.2.1 control-up](#621-control-up)
-            - [6.2.2 control-down](#622-control-down)
-            - [6.2.3 control-stop](#623-control-stop)
-            - [6.2.4 control-status](#624-control-status)
-        - [6.3 Security messages](#63-security-messages)
-            - [6.3.1 security-fetch-NVCN](#631-security-fetch-NVCN)
-            - [6.3.2 security-pw-change](#632-security-pw-change)
-            - [6.3.3 security-wifi-config](#633-security-wifi-config)
-            - [6.3.4 security-reset-to-default](#634-security-reset-to-default)
-            - [6.3.5 security-restart](#635-security-restart)
-    - [7. SCP Stack Software Architecture](#7-scp-stack-software-architecture)
-        - [7.1 Class Diagrams](#71-class-diagrams)
-    - [8. Annex](#8-annex)
-        - [8.1 Default credentials](#81-default-credentials)
-            - [8.1.1 Default device password](#811-default-device-password)
-            - [8.1.2 Default Wifi Access Point credentials](#812-default-wifi-access-point-credentials)
-    - [Project Philosophy](#project-philosophy)
-    - [License](#license)
-    - [Copyright](#copyright)
+  - [Table of contents](#table-of-contents)
+  - [Hint](#hint)
+  - [0. About](#0-about)
+    - [0.1 Purpose](#01-purpose)
+    - [0.2 Goal](#02-goal)
+  - [1. Architecture](#1-architecture)
+  - [2. Provisioning of devices](#2-provisioning-of-devices)
+  - [3. Discovery of devices](#3-discovery-of-devices)
+  - [4. Security](#4-security)
+  - [5. HTTP Ressources](#5-http-ressources)
+  - [6. REST Message Types](#6-rest-message-types)
+    - [6.1 Discover message types](#61-discover-message-types)
+      - [6.1.1 discover-hello](#611-discover-hello)
+        - [Variables](#variables)
+    - [6.2 Control messages](#62-control-messages)
+      - [6.2.1 control-up](#621-control-up)
+      - [6.2.2 control-down](#622-control-down)
+      - [6.2.3 control-stop](#623-control-stop)
+      - [6.2.4 control-status](#624-control-status)
+    - [6.3 Security messages](#63-security-messages)
+      - [6.3.1 security-fetch-NVCN](#631-security-fetch-nvcn)
+      - [6.3.2 security-pw-change](#632-security-pw-change)
+      - [6.3.3 security-wifi-config](#633-security-wifi-config)
+      - [6.3.4 security-reset-to-default](#634-security-reset-to-default)
+      - [6.3.5 security-restart](#635-security-restart)
+  - [7. SCP Stack Software Architecture](#7-scp-stack-software-architecture)
+    - [7.1 Used Libraries](#71-used-libraries)
+    - [7.2 Class Diagrams](#72-class-diagrams)
+  - [8. Annex](#8-annex)
+    - [8.1 Default credentials](#81-default-credentials)
+      - [8.1.1 Default device password](#811-default-device-password)
+      - [8.1.2 Default Wifi Access Point credentials](#812-default-wifi-access-point-credentials)
+  - [Project Philosophy](#project-philosophy)
+  - [License](#license)
+  - [Copyright](#copyright)
 
 ## Hint
 A PDF version of this README with all images is stored in the `./doc/` directory.
+
+## 0. About
+
+### 0.1 Purpose
+
+The purpose of the Secure Control Protocol is to enable makers to develop home automation devices based on the ESP8266 with minimum effort while providing a substantial level of security compared to other solutions. 
+
+### 0.2 Goal
+
+The goal is to provide a ready to use protocol and server where the user only has to register his own functions without a special need for configuration of the server.
 
 ## 1. Architecture
 
@@ -636,7 +650,13 @@ The encrypted payload of the response consists of a JSON representation of the f
 
 ## 7. SCP Stack Software Architecture
 
-### 7.1 Class Diagrams
+### 7.1 Used Libraries
+
+The SCP Arduino library uses the arduino-crypto and rBase64 libraries.
+
+The can be found in the repositories described in the library.json file.
+
+### 7.2 Class Diagrams
 
 ```puml
 
@@ -724,6 +744,8 @@ Pre-Shared-Key: default device password
 
 
 ## Project Philosophy
+
+To enhance the security of the project and devices using the protocol the project is licensed under the GPL Version 3.0 or later to prevent third parties from using it while lowering the level of security without disclosure.
 
 ## License
 SPDX-License-Identifier: GPL-3.0-or-later

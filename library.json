@@ -1,0 +1,34 @@
+{
+  "name": "Secure Control Protocol",
+  "keywords": "esp8266, security, aes-128-cbc, iot, protocol, json, rest, http, wifi",
+  "description": "ESP8266 Arduino Library for the Secure Control Protocol",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/benjaminSchilling33/secure-control-protocol"
+  },
+  "authors": 
+  [
+    {
+      "name": "Benjamin Schilling",
+      "email": "schilling.benjamin@delusionsoftware.de",
+      "maintainer": true
+    }
+  ],
+  "dependencies":
+  [
+  {
+    "name": "rBASE64",
+    "authors": "Abhijit Bose",
+    "frameworks": "arduino"
+  },
+  {
+    "name": "arduino-crypto",
+    "authors": "Chris Ellis",
+    "frameworks": "arduino"
+  }
+  ],
+  "version": "0.0.1",
+  "frameworks": "arduino",
+  "platforms": "*"
+}

@@ -51,6 +51,8 @@ private:
   ScpDeviceID dID;
   ScpCrypto crypto;
   ScpMessageFactory messageFactory;
+  ScpDebug scpDebug;
+
   String deviceID = "";
   ESP8266WebServer *server;
   String DEFAULT_PW = "1234567890123456";

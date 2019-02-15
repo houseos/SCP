@@ -6,11 +6,13 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'sh4rk/esp8266-arduino'
+resources:
+ containers:
+   - container: linux
+     image: sh4rk/esp8266-arduino
 
 steps:
-- script: echo Hello, world!
+- script: espmake
   displayName: 'Run a one-line script'
 
 - script: |

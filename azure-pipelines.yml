@@ -7,7 +7,7 @@ trigger:
 - master
 
 pool:
-  vmImage: 'Ubuntu-16.04'
+  vmImage: 'sh4rk/esp8266-arduino'
 
 steps:
 - script: echo Hello, world!

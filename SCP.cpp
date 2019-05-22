@@ -12,10 +12,9 @@ Copyright (C) 2018 Benjamin Schilling
 /**
  * Initialize the SCP library
  */
-SCP::SCP(String deviceType)
+SCP::SCP()
 {
   server = new ESP8266WebServer(80);
-  this.deviceType = deviceType;
 
   EEPROM.begin(512);
 }
@@ -67,7 +66,7 @@ void SCP::handleSecureControl()
     {
 
       // control up
-      if (!(DEFAULT_PW.equals(password.readPasswordFromEEPROM())))
+      if (!(DEFAULT_PW.equals(password.readPassword())))
       {
         String answer = messageFactory.createMessageControlUp(deviceID, "up");
 
@@ -82,7 +81,7 @@ void SCP::handleSecureControl()
     else if (messageType.startsWith("control-down"))
     {
       // control down
-      if (!(DEFAULT_PW.equals(password.readPasswordFromEEPROM())))
+      if (!(DEFAULT_PW.equals(password.readPassword())))
       {
         // control down
         String answer = messageFactory.createMessageControlDown(deviceID, "down");
@@ -97,7 +96,7 @@ void SCP::handleSecureControl()
     else if (messageType.startsWith("control-stop"))
     {
       // control stop
-      if (!(DEFAULT_PW.equals(password.readPasswordFromEEPROM())))
+      if (!(DEFAULT_PW.equals(password.readPassword())))
       {
         // control stop
         String answer = messageFactory.createMessageControlStop(deviceID, "stop");
@@ -112,7 +111,7 @@ void SCP::handleSecureControl()
     else if (messageType.startsWith("control-status"))
     {
       // control status
-      if (!(DEFAULT_PW.equals(password.readPasswordFromEEPROM())))
+      if (!(DEFAULT_PW.equals(password.readPassword())))
       {
         // control status
         String answer = messageFactory.createMessageControlStatus(deviceID, "status");
@@ -138,7 +137,7 @@ void SCP::handleSecureControl()
 
       scpDebug.println(newPassword);
 
-      password.writePasswordToEEPROM(String(newPassword));
+      password.writePassword(String(newPassword));
       String answer = messageFactory.createMessageSecurityPwChange("done");
 
       server->send(200, "application/json", answer);
@@ -205,26 +204,17 @@ void SCP::handleDiscoverHello()
   // handle discover-hello message
   if (payload.equals("discover-hello"))
   {
-    String defaultPWresult;
 
-    scpDebug.println("Configured Password: " + password.readPasswordFromEEPROM());
+    scpDebug.println("  Number of password changes: " + password.readCurrentPasswordNumber());
+    String currentPasswordNumber = String(password.readCurrentPasswordNumber());
 
-    if (DEFAULT_PW.equals(password.readPasswordFromEEPROM()))
-    {
-      defaultPWresult = "true";
-    }
-    else
-    {
-      defaultPWresult = "false";
-    }
+    String stringForHMAC = "discover-response" + deviceID + deviceType + currentPasswordNumber + "\0";
 
-    String stringForHMAC = "discover-response" + deviceID + deviceType + defaultPWresult + "\0";
-
-    scpDebug.println("  ToHash: " + stringForHMAC);
+    scpDebug.println("  ToHmac: " + stringForHMAC);
 
     uint8_t key[BLOCK_SIZE];
     memset(key, 0, BLOCK_SIZE * sizeof(uint8_t));
-    String pw = password.readPasswordFromEEPROM();
+    String pw = password.readPassword();
     for (int i = 0; i < BLOCK_SIZE; i++)
     {
       char c = pw.charAt(i);
@@ -236,11 +226,12 @@ void SCP::handleDiscoverHello()
     for (int i = 0; i < stringForHMAC.length(); i++)
     {
       buffer[i] = stringForHMAC.charAt(i);
+      scpDebug.println("Buffer: " +  String(buffer[i]));
     }
     crypto.generateHMAC(buffer, stringForHMAC.length(), key, hmac);
     rbase64.encode(hmac, SHA256HMAC_SIZE);
 
-    String answer = messageFactory.createMessageDiscoverHello(deviceID, WiFi.localIP().toString(), defaultPWresult, rbase64.result());
+    String answer = messageFactory.createMessageDiscoverHello(deviceID, deviceType, currentPasswordNumber, rbase64.result());
     server->send(200, "application/json", answer);
 
     scpDebug.println("  discover-response send: " + answer);
@@ -293,9 +284,11 @@ void SCP::handleNotFound()
 
 void SCP::handleClient() { server->handleClient(); }
 
-void SCP::init()
+void SCP::init(String deviceType)
 {
   crypto.setIV();
+
+  this->deviceType = deviceType;
 
   if (password.isDefaultPasswordSetOnce() == false)
   {
@@ -306,7 +299,7 @@ void SCP::init()
   {
     dID.setDeviceID();
   }
-  deviceID = dID.readDeviceIDFromEEPROM();
+  deviceID = dID.readDeviceID();
 
   scpDebug.println("DeviceID: " + deviceID);
 

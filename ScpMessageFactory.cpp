@@ -63,13 +63,12 @@ String ScpMessageFactory::createMessageSecurityResetToDefault(String status)
 }
 
 //Discovery Messages
-String ScpMessageFactory::createMessageDiscoverHello(String deviceID, String ipAddress, String defaultPWresult, String hmac)
+String ScpMessageFactory::createMessageDiscoverHello(String deviceID, String deviceType, String currentPasswordNumber, String hmac)
 {
     String message = "{ \"type\" : \"discover-response\",";
     message += "\"deviceId\" : \"" + deviceID + "\",";
-    message += "\"deviceType\" : \"secure-control\",";
-    message += "\"ipAddress\" : \"" + ipAddress + "\" ,";
-    message += "\"defaultPw\" :\"" + defaultPWresult + "\",";
+    message += "\"deviceType\" : \"" + deviceType + "\",";
+    message += "\"currentPasswordNumber\" :\"" + currentPasswordNumber + "\",";
     message += "\"hmac\" :\"";
     message += hmac;
     message += "\" }";

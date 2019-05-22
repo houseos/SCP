@@ -35,6 +35,7 @@
     - [8.1 Default credentials](#81-default-credentials)
       - [8.1.1 Default device password](#811-default-device-password)
       - [8.1.2 Default Wifi Access Point credentials](#812-default-wifi-access-point-credentials)
+    - [8.2 ESP8266 EEPROM Layout](#82-esp8266-eeprom-layout)
   - [Project Philosophy](#project-philosophy)
   - [License](#license)
   - [Copyright](#copyright)
@@ -544,7 +545,7 @@ The status vaules have the following meaning:
 #### 6.3.1 security-fetch-nvcn
 Ressource:
 ```
-http://device-ip/secure-control/security-fetch-NVCN?payload=encoded_data
+http://device-ip/secure-control/security-fetch-nvcn?payload=encoded_data
 ```
 
 The security-fetch-nvcn message fetches the initialization vector from the device.
@@ -560,12 +561,12 @@ The unencrypted payload of the response consists of a JSON representation of the
 | Key  | Possible values                                 |
 |------|-------------------------------------------------|
 | type | security-fetch-nvcn                             |
-| nvcn | current secure-controller initilization vector |
+| nvcn | current secure-controller initialization vector |
 ```
 {
     "type" : "security-fetch-nvcn",
     "deviceId" : "device ID",
-    "nvcn" : Stored initilization vector
+    "nvcn" : Stored initialization vector
 }
 ```
 
@@ -746,7 +747,14 @@ SSID: "scp-controller-" + MAC Address
 
 Pre-Shared-Key: default device password
 
-
+### 8.2 ESP8266 EEPROM Layout
+|   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+| - | - | - | - | - | - | - | - | - | - | - | -  | -  | -  | -  | -  | -  |
+| 0 | res. | res. | res. | res. | res. | res. | DevID Set | Pw Set |PW | PW | PW | PW | PW | PW | PW | PW |
+| 16 | PW | PW | PW | PW | PW | PW | PW | PW | DevID | DevID | DevID | DevID | DevID | DevID | DevID | DevID |
+| 32 | DevID | DevID | DevID | DevID | DevID | DevID | DevID | DevID | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  |
+| 48 | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  |
+| 64 | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  |
 
 ## Project Philosophy
 

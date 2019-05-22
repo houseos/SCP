@@ -29,3 +29,7 @@
 *.app
 
 *.pdf
+
+*.bin
+
+*.json

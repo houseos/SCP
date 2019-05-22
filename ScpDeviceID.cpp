@@ -11,23 +11,9 @@ Copyright (C) 2018 Benjamin Schilling
 
 ScpDeviceID::ScpDeviceID() {}
 
-void writeDeviceIDToEEPROM(String deviceID)
+String ScpDeviceID::readDeviceID()
 {
-  for (int i = 18; i < 34; i++)
-  {
-    EEPROM.write(i, deviceID[i - 18]);
-  }
-  EEPROM.commit();
-}
-
-String ScpDeviceID::readDeviceIDFromEEPROM()
-{
-  String deviceID;
-  for (int i = 18; i < 34; i++)
-  {
-    deviceID = deviceID + char(EEPROM.read(i));
-  }
-  return deviceID;
+return scpEeprom.getDeviceId();
 }
 
 void ScpDeviceID::setDeviceID()
@@ -53,25 +39,11 @@ void ScpDeviceID::setDeviceID()
   Serial.println("Random device id: " + deviceID);
 #endif
 
-  writeDeviceIDToEEPROM(deviceID);
-  EEPROM.write(17, 1);
-  EEPROM.commit();
+  scpEeprom.setDeviceId(deviceID);
+  scpEeprom.setIsDeviceIdSet();
 }
 
 bool ScpDeviceID::isDeviceIDSet()
 {
-  if (EEPROM.read(17) == 1)
-  {
-    #ifdef DEBUG
-    Serial.println("DeviceID set");
-    #endif
-    return true;
-  }
-  else
-  {
-    #ifdef DEBUG
-    Serial.println("DeviceID not set");
-    #endif
-    return false;
-  }
+ return scpEeprom.isDeviceIdSet();
 }

@@ -16,6 +16,7 @@ Copyright (C) 2018 Benjamin Schilling
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
 #include "ScpDebug.h"
+#include "ScpEepromController.h"
 
 #define EEPROM_OFFSET 18
 #define DEVICEID_LENGTH 16
@@ -50,7 +51,18 @@ public:
    * 
    * @return String 
    */
-  String readDeviceIDFromEEPROM();
+  String readDeviceID();
+
+private:
+
+  /**
+   * @brief 
+   * 
+   * @return void 
+   */
+  void writeDeviceID(String deviceID);
+  
+ ScpEepromController scpEeprom;
 };
 
 #endif

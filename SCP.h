@@ -26,13 +26,13 @@ public:
    * @brief Construct a new SCP object
    * 
    */
-  SCP(String deviceType);
+  SCP();
 
   /**
    * @brief 
    * 
    */
-  void init();
+  void init(String deviceType);
 
     /**
    * @brief 

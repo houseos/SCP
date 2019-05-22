@@ -15,11 +15,7 @@ Copyright (C) 2018 Benjamin Schilling
 
 #include "Arduino.h"
 #include "ScpDebug.h"
-
-#define PW_LENGTH 16
-#define DEFAULTPASSWORD_IS_SET_ADDRESS 0  // 0
-#define PASSWORD_ADDRESS 1 // 1 - 17
-#define NUMBER_OF_PW_CHANGES_ADDRESS //
+#include "ScpEepromController.h"
 
 class ScpPassword
 {
@@ -50,33 +46,34 @@ public:
    * 
    * @param password 
    */
-  void writePasswordToEEPROM(String password);
+  void writePassword(String password);
 
   /**
    * @brief 
    * 
    * @return String 
    */
-  String readPasswordFromEEPROM();
+  String readPassword();
 
   /**
    * @brief 
    * 
    * @param number 
    */
-  void storeNumberOfPasswordChanges(uint32_t number);
+  void storeCurrentPasswordNumber(uint32_t number);
 
   /**
    * @brief 
    * 
    * @return number
    */
-  uint32_t readNumberOfPasswordChanges();
+  uint32_t readCurrentPasswordNumber();
 
   void storePasswordInIntArray(uint8_t buffer[], uint8_t buffer_length);
 
 private:
  const String DEFAULT_PW = "1234567890123456";
+ ScpEepromController scpEeprom;
 
 };
 

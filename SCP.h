@@ -26,7 +26,7 @@ public:
    * @brief Construct a new SCP object
    * 
    */
-  SCP();
+  SCP(String deviceType);
 
   /**
    * @brief 
@@ -54,6 +54,7 @@ private:
   ScpDebug scpDebug;
 
   String deviceID = "";
+  String deviceType = "";
   ESP8266WebServer *server;
   String DEFAULT_PW = "1234567890123456";
 

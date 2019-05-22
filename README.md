@@ -23,7 +23,7 @@
       - [6.2.3 control-stop](#623-control-stop)
       - [6.2.4 control-status](#624-control-status)
     - [6.3 Security messages](#63-security-messages)
-      - [6.3.1 security-fetch-NVCN](#631-security-fetch-nvcn)
+      - [6.3.1 security-fetch-nvcn](#631-security-fetch-nvcn)
       - [6.3.2 security-pw-change](#632-security-pw-change)
       - [6.3.3 security-wifi-config](#633-security-wifi-config)
       - [6.3.4 security-reset-to-default](#634-security-reset-to-default)
@@ -118,17 +118,17 @@ client ..> storage : Store passwords
 
 ## 2. Provisioning of devices
 
-When the default password of the shutter-controller is set or no wifi credentials are provisioned the shutter-controller provides a Wifi Access Point using WPA2-PSK which can be accessed with the [default credentials from the annex](#81-default-credentials).
+When the default password of the secure-controller is set or no wifi credentials are provisioned the secure-controller provides a Wifi Access Point using WPA2-PSK which can be accessed with the [default credentials from the annex](#81-default-credentials).
 
-When the Wifi Access Point is available the control device connects to the wifi and the shutter-controller acts as a DHCP server and provides an IP address from a small Class C IP subnet.
+When the Wifi Access Point is available the control device connects to the wifi and the secure-controller acts as a DHCP server and provides an IP address from a small Class C IP subnet.
 
-Now the control device can start the discovery of shutter-controller in the IP subnet. If the shutter-controller is found a new shutter-control password must be set. This can be done via the [security-pw-change message](#632-security-pw-change). As a second step the credentials of the home network wifi the shutter-controller operates in should be supplied. The user sends a the [security-wifi-config message](#633-security-wifi-config) containing the encrypted credentials to the shutter-controller. 
+Now the control device can start the discovery of secure-controller in the IP subnet. If the secure-controller is found a new secure-control password must be set. This can be done via the [security-pw-change message](#632-security-pw-change). As a second step the credentials of the home network wifi the secure-controller operates in should be supplied. The user sends a the [security-wifi-config message](#633-security-wifi-config) containing the encrypted credentials to the secure-controller. 
 
-If a shutter-controller receives a valid [security-wifi-config message](#633-security-wifi-config) it tries to connect to the wifi and reponds with the result.
+If a secure-controller receives a valid [security-wifi-config message](#633-security-wifi-config) it tries to connect to the wifi and reponds with the result.
 
-The third step is triggered by the [security-reset message](#635-security-restart) which restarts the shutter-controller and thus applies the configured settings. If the shutter-controller default password and the wifi credentials are changed / provisined, the shutter-controller is started as in the wifi client only mode.
+The third step is triggered by the [security-reset message](#635-security-restart) which restarts the secure-controller and thus applies the configured settings. If the secure-controller default password and the wifi credentials are changed / provisined, the secure-controller is started as in the wifi client only mode.
 
-*__Note:__* If the connection to the supplied home network wifi fails, the shutter-controller acts as a wifi access point in order to receive the new home network credentials. But in contrast to the beginning of this chapter the password for this wifi will now be the provisioned shutter-controller password.
+*__Note:__* If the connection to the supplied home network wifi fails, the secure-controller acts as a wifi access point in order to receive the new home network credentials. But in contrast to the beginning of this chapter the password for this wifi will now be the provisioned secure-controller password.
 
 ```puml
 
@@ -249,21 +249,21 @@ webserver --> client : Respond with HTTP 404 Not found
 
 ## 4. Security
 
-The security is based on pre-shared secrets. Each device has its own secret. The secret is only shared between the shutter-controller and the control device(s).
+The security is based on pre-shared secrets. Each device has its own secret. The secret is only shared between the secure-controller and the control device(s).
 
-Each shutter-controller has a preconfigured password which has to be changed when the shutter-controller is first accessed. The shutter-controller does __not__ accept any [control messages](#62-control-messages) or [security messages](#63-security-messages) (besides the [security-pw-change message](#632-security-pw-change)) if the current shutter-controller password matches the [default password from the annex](#811-default-device-password).
+Each secure-controller has a preconfigured password which has to be changed when the secure-controller is first accessed. The secure-controller does __not__ accept any [control messages](#62-control-messages) or [security messages](#63-security-messages) (besides the [security-pw-change message](#632-security-pw-change)) if the current secure-controller password matches the [default password from the annex](#811-default-device-password).
 
-The password has the be 16 characters long. This ensures a adequate security due to the large key space. The password will usually not be used by a human user. The secret is set by the controller device and sored in the shutter-controller. Therefore the length limitation does not pose a usability problem.   
+The password has the be 16 characters long. This ensures a adequate security due to the large key space. The password will usually not be used by a human user. The secret is set by the controller device and sored in the secure-controller. Therefore the length limitation does not pose a usability problem.   
 
 All (except for [6.1.1 discover-hello](#611-discover-hello)) exchanged messages are encrypted. The method used is AES-128-CBC with the shared password, a NVCN and an initialization vector (IV).
 
 To prevent attacks on the content / password of the exchanged messages an additional measure is taken. For every message an intitialzation vector is generated (a 128 bit random number). This number is generated by the sender of the message. It is added at the beginning of the message contents. 
 
-The NVCN shall prevent replay attacks and needs to be fetched from the shutter-controller by the control device for every single message before encrypting it. The correctness of the supplied NVCN of each message is checked by the shutter-controller.
+The NVCN shall prevent replay attacks and needs to be fetched from the secure-controller by the control device for every single message before encrypting it. The correctness of the supplied NVCN of each message is checked by the secure-controller.
 
 *__Currently not covered:__*
 
-No hardware attacks are currently considered. The flash memory of the shutter-controller stores the shutter-controller password which could be read and missused. This attack is considered to be unlikely and of limited use only since every device has a seperate password. Never the less any ideas / comments on this issue are very welcome. 
+No hardware attacks are currently considered. The flash memory of the secure-controller stores the secure-controller password which could be read and missused. This attack is considered to be unlikely and of limited use only since every device has a seperate password. Never the less any ideas / comments on this issue are very welcome. 
 
 
 ## 5. HTTP Ressources
@@ -282,18 +282,18 @@ http://device-ip/secure-control/security-fetch-NVCN
 
 ## 6. REST Message Types
 
-The shutter-controller waits for HTTP-GET messages with the Content-Type application/x-www-form-urlencoded.
+The secure-controller waits for HTTP-GET messages with the Content-Type application/x-www-form-urlencoded.
 
 Almost all messages are encrypted, see [security chapter](#4-security) for details on the algorithms and exceptions.
 
-The initialization vector (NVCN) used for replay protection is randomly generated on shutter-controller start-up. It is being fetched from the control device by using the security-fetch-NVCN message before sending a message to the shutter-controller. The NVCN is incremented by the shutter-controller after every [security-fetch-NVCN message](#631-security-fetch-NVCN).
+The initialization vector (NVCN) used for replay protection is randomly generated on secure-controller start-up. It is being fetched from the control device by using the security-fetch-NVCN message before sending a message to the secure-controller. The NVCN is incremented by the secure-controller after every [security-fetch-NVCN message](#631-security-fetch-NVCN).
 
 For all encrypted messages the following HTTP ressource is used:
 ```
 http://device-ip/secure-control
 ```
 
-The data send to the shutter-controller is encoded in the payload parameter.
+The data send to the secure-controller is encoded in the payload parameter.
 ```
 http://device-ip/secure-control?payload=encoded_data
 ```
@@ -302,7 +302,7 @@ The encoded_data consists of the base64 and urlencoded encrypted message.
 ```
 encoded_data = urlencode(base64(encrypted_message))
 ```
-The encrypted_message consists of a IV, the device ID of the shutter-controller, the NVCN and the type of the message. The NVCN, the device ID and the type are being concetenated. As seperator a colon is used. The message is then encrypted using the IV and the shutter-controller password.
+The encrypted_message consists of a IV, the device ID of the secure-controller, the NVCN and the type of the message. The NVCN, the device ID and the type are being concetenated. As seperator a colon is used. The message is then encrypted using the IV and the secure-controller password.
 ```
 encrypted_message = IV + encrypt(NVCN + ":" + deviceID + ":" + message_type, IV, password)
 ```
@@ -364,7 +364,12 @@ server --> client : Send response
 Ressource: http://device-ip/secure-control/discover-hello?payload=discover-hello
 ```
 
-The discover-hello message is sent to all IP addresses of the home network subnet to determine which IP addresses beloang to a shutter-controller. It is the only message being sent without encryption. If the device is a shutter-controller it responds with a HTTP 200 OK message containing a JSON representation of the following information.
+The discover-hello message is sent to all IP addresses of the home network subnet to determine which IP addresses beloang to a secure-controller. It is the only message being sent without encryption. If the device is a secure-controller it responds with a HTTP 200 OK message containing a JSON representation of the following information.
+
+The HMAC is calculated as follows:
+```
+hmac = "discover-response" + deviceID + deviceType + IP Address + current password number
+```
 
 ##### Variables
 
@@ -372,14 +377,14 @@ The discover-hello message is sent to all IP addresses of the home network subne
 |-------------------------|------------------------------------------|
 | type                    | discover-response                        |
 | device-id               | device id (16 byte)                      |
-| device-type             | shutter-controller                       |
+| device-type             | device type                              |
 | current password number | number of password changes, 0 is default |
 | hmac                    | Keyed-Hashed Massage Authentication Code |
 ```
 {
     "type" : "discover-response",
     "deviceId" : "device ID",
-    "deviceType" : "shutter-controller",
+    "deviceType" : "secure-controller",
     "currentPasswordNumber" : number of password changes   ,
     "hmac" : Keyed-Hashed Massage Authentication Code
 }
@@ -393,7 +398,7 @@ Ressource:
 http://device-ip/secure-control?payload=encoded_data
 ```
 
-The control-up message tells the shutter-controller to open.
+The control-up message tells the secure-controller to open.
 
 The deviceID provided in the payload must match the configured device ID.
 
@@ -426,7 +431,7 @@ The status vaules have the following meaning:
 
 #### 6.2.2 control-down
 
-The control-down message tells the shutter-controller to close.
+The control-down message tells the secure-controller to close.
 
 The deviceID provided in the payload must match the configured device ID.
 
@@ -465,7 +470,7 @@ Ressource:
 http://device-ip/secure-control?payload=encoded_data
 ```
 
-The control-stop message tells the shutter-controller to stop.
+The control-stop message tells the secure-controller to stop.
 
 The deviceID provided in the payload must match the configured device ID.
 
@@ -502,7 +507,7 @@ Ressource:
 http://device-ip/secure-control?payload=encoded_data
 ```
 
-The control-status message returns the current status of the shutter-controller to the control device.
+The control-status message returns the current status of the secure-controller to the control device.
 
 The deviceID provided in the payload must match the configured device ID.
 
@@ -536,13 +541,13 @@ The status vaules have the following meaning:
 
 ### 6.3 Security messages
 
-#### 6.3.1 security-fetch-NVCN
+#### 6.3.1 security-fetch-nvcn
 Ressource:
 ```
 http://device-ip/secure-control/security-fetch-NVCN?payload=encoded_data
 ```
 
-The security-fetch-NVCN message fetches the initialization vector from the device.
+The security-fetch-nvcn message fetches the initialization vector from the device.
 
 The deviceID provided in the payload must match the configured device ID.
 
@@ -554,13 +559,13 @@ The unencrypted payload of the response consists of a JSON representation of the
 
 | Key  | Possible values                                 |
 |------|-------------------------------------------------|
-| type | security-fetch-NVCN                             |
-| NVCN | current shutter-controller initilization vector |
+| type | security-fetch-nvcn                             |
+| nvcn | current secure-controller initilization vector |
 ```
 {
-    "type" : "security-fetch-NVCN",
+    "type" : "security-fetch-nvcn",
     "deviceId" : "device ID",
-    "NVCN" : Stored initilization vector
+    "nvcn" : Stored initilization vector
 }
 ```
 

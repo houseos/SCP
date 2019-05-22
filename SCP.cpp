@@ -12,9 +12,10 @@ Copyright (C) 2018 Benjamin Schilling
 /**
  * Initialize the SCP library
  */
-SCP::SCP()
+SCP::SCP(String deviceType)
 {
   server = new ESP8266WebServer(80);
+  this.deviceType = deviceType;
 
   EEPROM.begin(512);
 }
@@ -110,7 +111,7 @@ void SCP::handleSecureControl()
     }
     else if (messageType.startsWith("control-status"))
     {
-      // control stop
+      // control status
       if (!(DEFAULT_PW.equals(password.readPasswordFromEEPROM())))
       {
         // control status
@@ -217,8 +218,7 @@ void SCP::handleDiscoverHello()
       defaultPWresult = "false";
     }
 
-    String stringForHMAC = "discover-response" + deviceID + "secure-control" +
-                           WiFi.localIP().toString() + defaultPWresult + "\0";
+    String stringForHMAC = "discover-response" + deviceID + deviceType + defaultPWresult + "\0";
 
     scpDebug.println("  ToHash: " + stringForHMAC);
 

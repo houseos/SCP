@@ -16,7 +16,10 @@ Copyright (C) 2018 Benjamin Schilling
 #include "Arduino.h"
 #include "ScpDebug.h"
 
-#define  PW_LENGTH 16
+#define PW_LENGTH 16
+#define DEFAULTPASSWORD_IS_SET_ADDRESS 0  // 0
+#define PASSWORD_ADDRESS 1 // 1 - 17
+#define NUMBER_OF_PW_CHANGES_ADDRESS //
 
 class ScpPassword
 {
@@ -33,6 +36,7 @@ public:
    * 
    */
   void setDefaultPassword();
+
   /**
    * @brief 
    * 
@@ -40,18 +44,34 @@ public:
    * @return false 
    */
   bool isDefaultPasswordSetOnce();
+
   /**
    * @brief 
    * 
    * @param password 
    */
   void writePasswordToEEPROM(String password);
+
   /**
    * @brief 
    * 
    * @return String 
    */
   String readPasswordFromEEPROM();
+
+  /**
+   * @brief 
+   * 
+   * @param number 
+   */
+  void storeNumberOfPasswordChanges(uint32_t number);
+
+  /**
+   * @brief 
+   * 
+   * @return number
+   */
+  uint32_t readNumberOfPasswordChanges();
 
   void storePasswordInIntArray(uint8_t buffer[], uint8_t buffer_length);
 

@@ -16,13 +16,13 @@ ScpPassword::ScpPassword()
 void ScpPassword::setDefaultPassword()
 {
   writePasswordToEEPROM(DEFAULT_PW);
-  EEPROM.write(0, 1);
+  EEPROM.write(DEFAULTPASSWORD_IS_SET_ADDRESS, 1);
   EEPROM.commit();
 }
 
 bool ScpPassword::isDefaultPasswordSetOnce()
 {
-  if (EEPROM.read(0) == 1)
+  if (EEPROM.read(DEFAULTPASSWORD_IS_SET_ADDRESS) == 1)
   {
     return true;
   }
@@ -34,7 +34,7 @@ bool ScpPassword::isDefaultPasswordSetOnce()
 
 void ScpPassword::writePasswordToEEPROM(String password)
 {
-  for (int i = 1; i < 17; i++)
+  for (int i = PASSWORD_ADDRESS; i < PW_LENGTH + 1; i++)
   {
     EEPROM.write(i, (byte)password.charAt(i - 1));
   }
@@ -44,12 +44,20 @@ void ScpPassword::writePasswordToEEPROM(String password)
 String ScpPassword::readPasswordFromEEPROM()
 {
   String password = "";
-  for (int i = 1; i < 17; i++)
+  for (int i = PASSWORD_ADDRESS; i < PASSWORD_ADDRESS + 1; i++)
   {
     password = password + char(EEPROM.read(i));
   }
   return password;
 }
+
+  void ScpPassword::storeNumberOfPasswordChanges(uint32_t number) {
+
+  }
+
+  uint32_t ScpPassword::readNumberOfPasswordChanges() {
+
+  }
 
 void ScpPassword::storePasswordInIntArray(uint8_t buffer[], uint8_t buffer_length)
 {

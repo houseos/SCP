@@ -105,6 +105,8 @@ private:
     const int DEVICE_ID_ADDRESS = 50;
     const int DEVICE_ID_LENGTH = 16; // 50 - 65
 
+    ScpDebug scpDebug;
+
 };
 
 #endif

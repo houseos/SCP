@@ -10,9 +10,6 @@ Copyright (C) 2018 Benjamin Schilling
 #ifndef ScpPassword_h
 #define ScpPassword_h
 
-// store Password persistently
-#include <EEPROM.h>
-
 #include "Arduino.h"
 #include "ScpDebug.h"
 #include "ScpEepromController.h"
@@ -74,7 +71,7 @@ public:
 private:
  const String DEFAULT_PW = "1234567890123456";
  ScpEepromController scpEeprom;
-
+ ScpDebug scpDebug;
 };
 
 #endif

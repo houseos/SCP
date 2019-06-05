@@ -111,6 +111,8 @@ public:
    */
   String createMessageDiscoverHello(String deviceID, String ipAddress, String defaultPWresult, String hmac);
 
+private:
+  ScpDebug scpDebug;
 };
 
 #endif

@@ -10,9 +10,6 @@ Copyright (C) 2018 Benjamin Schilling
 #ifndef ScpDeviceID_h
 #define ScpDeviceID_h
 
-// store DevceID persistently
-#include <EEPROM.h>
-
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
 #include "ScpDebug.h"
@@ -63,6 +60,7 @@ private:
   void writeDeviceID(String deviceID);
   
  ScpEepromController scpEeprom;
+ ScpDebug scpDebug;
 };
 
 #endif

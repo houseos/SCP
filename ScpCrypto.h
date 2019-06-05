@@ -38,13 +38,14 @@ public:
    * @brief 
    * 
    * @param enciphered 
-   * @param output 
    * @param lengthOfText 
    * @param key 
    * @param iv 
+   * 
+   * @returns String
    */
-  void decrypt(char *enciphered, char *output, int lengthOfText, uint8_t *key,
-               uint8_t *iv);
+  String decrypt(char *enciphered, uint32_t lengthOfText,
+                  uint8_t *key, uint8_t *iv);
 
   /**
   * @brief 
@@ -56,13 +57,6 @@ public:
   */
   void generateHMAC(byte *message, uint32_t length, uint8_t *key,
                     byte *authCode);
-  /**
- * @brief 
- * 
- * @param text 
- * @param length 
- */
-  void getBufferSize(char *text, int &length);
 
   /**
  * @brief 

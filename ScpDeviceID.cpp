@@ -9,7 +9,8 @@ Copyright (C) 2018 Benjamin Schilling
 
 #include "ScpDeviceID.h"
 
-ScpDeviceID::ScpDeviceID() {}
+ScpDeviceID::ScpDeviceID() {
+}
 
 String ScpDeviceID::readDeviceID()
 {
@@ -20,7 +21,7 @@ void ScpDeviceID::setDeviceID()
 {
   char buffer[17];
 #ifdef DEBUG
-  Serial.println("Mac Addresss: for device ID" + WiFi.macAddress());
+  Serial.println("Mac Addresss: for device ID: " + WiFi.macAddress());
 #endif
   WiFi.macAddress().toCharArray(buffer, 17);
 

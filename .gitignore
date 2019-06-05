@@ -33,3 +33,4 @@
 *.bin
 
 *.json
+/.vscode/ipch/a1f0d9ccce021949/*.ipch

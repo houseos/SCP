@@ -748,12 +748,16 @@ SSID: "scp-controller-" + MAC Address
 Pre-Shared-Key: default device password
 
 ### 8.2 ESP8266 EEPROM Layout
-|   | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
-| - | - | - | - | - | - | - | - | - | - | - | -  | -  | -  | -  | -  | -  |
-| 0 | res. | res. | res. | res. | res. | res. | DevID Set | Pw Set |PW | PW | PW | PW | PW | PW | PW | PW |
-| 16 | PW | PW | PW | PW | PW | PW | PW | PW | DevID | DevID | DevID | DevID | DevID | DevID | DevID | DevID |
-| 32 | DevID | DevID | DevID | DevID | DevID | DevID | DevID | DevID | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  |
-| 48 | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  |
+|   | 128 | 64 | 32 | 16 | 8 | 4 | 2 | 1 |  
+| - | - | - | - | - | - | - | - | - |  
+| 0 | res. | res. | res. | res. | res. | res. | DevID Set | Pw Set |
+| 8 | PW | PW | PW | PW | PW | PW | PW | PW |
+| 16 | PW | PW | PW | PW | PW | PW | PW | PW |
+| 24 | DevID | DevID | DevID | DevID | DevID | DevID | DevID | DevID |
+| 32 | DevID | DevID | DevID | DevID | DevID | DevID | DevID | DevID | 
+| 40 | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  |
+| 48 | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | 
+| 56 | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  |
 | 64 | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  |
 
 ## Project Philosophy

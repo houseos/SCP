@@ -11,12 +11,12 @@ Copyright (C) 2018 Benjamin Schilling
 
 ScpPassword::ScpPassword()
 {
-
 }
 
 void ScpPassword::setDefaultPassword()
 {
-  scpEeprom.setPassword(DEFAULT_PW);
+  scpDebug.println("    ScpPassword.setDefaultPassword: Setting default password");
+  writePassword(DEFAULT_PW);
   scpEeprom.setIsDefaultPasswordSet();
 }
 
@@ -27,6 +27,7 @@ bool ScpPassword::isDefaultPasswordSetOnce()
 
 void ScpPassword::writePassword(String password)
 {
+  scpDebug.println("    ScpPassword.writePassword: Setting " + password + "as new password");
   scpEeprom.setPassword(password);
 }
 
@@ -37,6 +38,7 @@ String ScpPassword::readPassword()
 }
 
 void ScpPassword::storeCurrentPasswordNumber(uint32_t number) {
+  scpDebug.println("    ScpPassword.storeCurrentPasswordNumber: Number of password: " + number);
 scpEeprom.setCurrentPwNumber(number);
 }
 

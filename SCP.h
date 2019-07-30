@@ -74,7 +74,7 @@ private:
    * @brief 
    * 
    */
-  void handleSecurityFetchIV();
+  void handleSecurityFetchNVCN();
 
   /**
    * @brief 

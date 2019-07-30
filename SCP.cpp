@@ -89,7 +89,7 @@ void SCP::handleSecureControl()
       }
       else
       {
-        String answer = messageFactory.createMessageControlUp(deviceID, "error");
+        String answer = messageFactory.createMessageControlUp(deviceID, "error - default password set");
         scpDebug.println("  SCP.handleSecureControl: " + answer);
         server->send(200, "application/json", answer);
       }
@@ -106,7 +106,7 @@ void SCP::handleSecureControl()
       }
       else
       {
-        String answer = messageFactory.createMessageControlDown(deviceID, "error");
+        String answer = messageFactory.createMessageControlDown(deviceID, "error - default password set");
         scpDebug.println("  SCP.handleSecureControl: " + answer);
         server->send(200, "application/json", answer);
       }
@@ -124,7 +124,7 @@ void SCP::handleSecureControl()
       }
       else
       {
-        String answer = messageFactory.createMessageControlStop(deviceID, "error");
+        String answer = messageFactory.createMessageControlStop(deviceID, "error - default password set");
         scpDebug.println("  SCP.handleSecureControl: " + answer);
         server->send(200, "application/json", answer);
       }
@@ -141,7 +141,7 @@ void SCP::handleSecureControl()
       }
       else
       {
-        String answer = messageFactory.createMessageControlStatus(deviceID, "error");
+        String answer = messageFactory.createMessageControlStatus(deviceID, "error - default password set");
         scpDebug.println("  SCP.handleSecureControl: " + answer);
         server->send(200, "application/json", answer);
       }
@@ -149,19 +149,23 @@ void SCP::handleSecureControl()
     else if (messageType.startsWith("security-pw-change"))
     {
       // Set new password from message
-      char newPassword[PW_LENGTH];
-      memset(newPassword, 0, PW_LENGTH * sizeof(char));
+      char newPassword[PW_LENGTH+1];
+      memset(newPassword, 0, (PW_LENGTH+1) * sizeof(char));
       for (int i = 0; i < 16; i++)
       {
         newPassword[i] = messageType.charAt(19 + i);
       }
       // store new password
-
-      scpDebug.println(newPassword);
-
+      scpDebug.println("  SCP.handleSecureControl -> security-pw-change : new password: " + String(newPassword));
       password.writePassword(String(newPassword));
-      String answer = messageFactory.createMessageSecurityPwChange("done");
-      scpDebug.println("  SCP.handleSecureControl: " + answer);
+      scpDebug.println("  SCP.handleSecureControl -> security-pw-change : new password set");
+      //Increment number of password changes
+      scpDebug.println("  SCP.handleSecureControl -> security-pw-change : new number of password changes: " + String(password.readCurrentPasswordNumber() + 1));
+      password.storeCurrentPasswordNumber(password.readCurrentPasswordNumber() + 1);
+
+      //Create answer
+      String answer = messageFactory.createMessageSecurityPwChange(deviceID, String(password.readCurrentPasswordNumber()) , "done");
+      scpDebug.println("  SCP.handleSecureControl: security-pw-change send " + answer);
       server->send(200, "application/json", answer);
     }
     else if (messageType.startsWith("security-wifi-config"))
@@ -187,14 +191,14 @@ void SCP::handleSecureControl()
   }
 }
 
-void SCP::handleSecurityFetchIV()
+void SCP::handleSecurityFetchNVCN()
 {
-  scpDebug.println("  SCP.handleSecurityFetchIV: Message: SecurityFetchIV");
+  scpDebug.println("  SCP.handleSecurityFetchNVCN: Message: SecurityFetchIV");
 
   String payload = server->arg("payload");
 
-  scpDebug.println("  SCP.handleSecurityFetchIV: Payload:" + payload);
-  scpDebug.println("  SCP.handleSecurityFetchIV: Device ID:" + deviceID);
+  scpDebug.println("  SCP.handleSecurityFetchNVCN: Payload:" + payload);
+  scpDebug.println("  SCP.handleSecurityFetchNVCN: Device ID:" + deviceID);
 
   if (payload.startsWith(deviceID))
   {
@@ -204,15 +208,15 @@ void SCP::handleSecurityFetchIV()
 
     String ivString = crypto.getIVString();
 
-    String answer = messageFactory.createMessageSecurityFetchIV(deviceID, ivString);
-    scpDebug.println("  SCP.handleSecurityFetchIV: " + answer);
+    String answer = messageFactory.createMessageSecurityFetchNVCN(deviceID, ivString);
+    scpDebug.println("  SCP.handleSecurityFetchNVCN: " + answer);
     server->send(200, "application/json", answer);
   }
   else
   {
     sendMalformedPayload();
   }
-  scpDebug.println("  SCP.handleSecurityFetchIV: Message End: SecurityFetchIV");
+  scpDebug.println("  SCP.handleSecurityFetchNVCN: Message End: SecurityFetchIV");
 }
 
 void SCP::handleDiscoverHello()
@@ -227,33 +231,7 @@ void SCP::handleDiscoverHello()
   if (payload.equals("discover-hello"))
   {
 
-    scpDebug.println("  SCP.handleDiscoverHello:  Number of password changes: " + password.readCurrentPasswordNumber());
-    String currentPasswordNumber = String(password.readCurrentPasswordNumber());
-
-    String stringForHMAC = "discover-response" + deviceID + deviceType + currentPasswordNumber + "\0";
-
-    scpDebug.println("  SCP.handleDiscoverHello:  ToHmac: " + stringForHMAC);
-
-    uint8_t key[BLOCK_SIZE];
-    memset(key, 0, BLOCK_SIZE * sizeof(uint8_t));
-    String pw = password.readPassword();
-    for (int i = 0; i < BLOCK_SIZE; i++)
-    {
-      char c = pw.charAt(i);
-      key[i] = c;
-    }
-    byte hmac[SHA256HMAC_SIZE];
-
-    byte buffer[stringForHMAC.length()];
-    for (int i = 0; i < stringForHMAC.length(); i++)
-    {
-      buffer[i] = stringForHMAC.charAt(i);
-      scpDebug.println("  SCP.handleDiscoverHello:  Buffer: " +  String(buffer[i]));
-    }
-    crypto.generateHMAC(buffer, stringForHMAC.length(), key, hmac);
-    rbase64.encode(hmac, SHA256HMAC_SIZE);
-
-    String answer = messageFactory.createMessageDiscoverHello(deviceID, deviceType, currentPasswordNumber, rbase64.result());
+    String answer = messageFactory.createMessageDiscoverHello(deviceID, deviceType);
     server->send(200, "application/json", answer);
 
     scpDebug.println("  SCP.handleDiscoverHello:  discover-response send: " + answer);
@@ -330,8 +308,8 @@ void SCP::init(String deviceType)
   scpDebug.println("  SCP.init: DeviceID: " + deviceID);
 
   server->on("/secure-control", std::bind(&SCP::handleSecureControl, this));
-  server->on("/secure-control/security-fetch-iv",
-             std::bind(&SCP::handleSecurityFetchIV, this));
+  server->on("/secure-control/security-fetch-nvcn",
+             std::bind(&SCP::handleSecurityFetchNVCN, this));
   server->on("/secure-control/discover-hello",
              std::bind(&SCP::handleDiscoverHello, this));
   server->onNotFound(std::bind(&SCP::handleNotFound, this));

@@ -40,15 +40,15 @@ String ScpMessageFactory::createMessageControlStatus(String deviceID, String sta
 }
 
 // Security Messages
-String ScpMessageFactory::createMessageSecurityFetchIV(String deviceID, String ivString)
+String ScpMessageFactory::createMessageSecurityFetchNVCN(String deviceID, String nvcnString)
 {
-    String message = "{ \"type\" : \"security-fetch-iv\",  \"deviceId\" :\"" + deviceID + "\" ,  \"iv\" :\"" + ivString + "\"  }";
+    String message = "{ \"type\" : \"security-fetch-nvcn\",  \"deviceId\" :\"" + deviceID + "\" ,  \"nvcn\" :\"" + nvcnString + "\"  }";
     return message;
 }
-String ScpMessageFactory::createMessageSecurityPwChange(String status)
+String ScpMessageFactory::createMessageSecurityPwChange(String deviceID, String numberOfPasswordChanges, String status)
 {
-    String message = "{ \"type\" : \"security-pw-change\", \"result\" : " + status +
-                     " }";
+    String message = "{ \"type\" : \"security-pw-change\",  \"deviceId\" :\"" + deviceID + "\" ,  \"currentPasswordNumber\" :\"" + numberOfPasswordChanges + "\" , \"result\" : \"" + status +
+                     "\" }";
     return message;
 }
 String ScpMessageFactory::createMessageSecurityWifiConfig()
@@ -63,8 +63,15 @@ String ScpMessageFactory::createMessageSecurityResetToDefault(String status)
 }
 
 //Discovery Messages
-String ScpMessageFactory::createMessageDiscoverHello(String deviceID, String deviceType, String currentPasswordNumber, String hmac)
+String ScpMessageFactory::createMessageDiscoverHello(String deviceID, String deviceType)
 {
+    scpDebug.println("  SCP.handleDiscoverHello -> createMessageDiscoverHello:  Number of password changes: " + String(password.readCurrentPasswordNumber()));
+    String currentPasswordNumber = String(password.readCurrentPasswordNumber());
+
+    String stringForHMAC = "discover-response" + deviceID + deviceType + currentPasswordNumber + "\0";
+
+    String hmac = hmacForString(stringForHMAC);
+
     String message = "{ \"type\" : \"discover-response\",";
     message += "\"deviceId\" : \"" + deviceID + "\",";
     message += "\"deviceType\" : \"" + deviceType + "\",";
@@ -73,4 +80,36 @@ String ScpMessageFactory::createMessageDiscoverHello(String deviceID, String dev
     message += hmac;
     message += "\" }";
     return message;
+}
+
+
+String ScpMessageFactory::hmacForString(String string){
+
+    scpDebug.println("  SCP.handleDiscoverHello -> createMessageDiscoverHello:  ToHmac: " + string);
+
+    uint8_t key[BLOCK_SIZE];
+    memset(key, 0, BLOCK_SIZE * sizeof(uint8_t));
+    String pw = password.readPassword();
+    for (int i = 0; i < BLOCK_SIZE; i++)
+    {
+      char c = pw.charAt(i);
+      key[i] = c;
+    }
+    byte hmacBytes[SHA256HMAC_SIZE];
+
+    byte buffer[string.length()];
+    for (int i = 0; i < string.length(); i++)
+    {
+      buffer[i] = string.charAt(i);
+      scpDebug.println("  SCP.handleDiscoverHello -> createMessageDiscoverHello:  Buffer: " +  String(buffer[i]));
+    }
+    crypto.generateHMAC(buffer, string.length(), key, hmacBytes);
+
+    for(int i = 0; i< SHA256HMAC_SIZE; i++){
+        scpDebug.println("  SCP.handleDiscoverHello -> createMessageDiscoverHello:  HMAC Byte: " + String(i) + ": " + String(hmacBytes[i]));
+    }
+
+    rbase64.encode(hmacBytes, SHA256HMAC_SIZE);
+
+    return rbase64.result();
 }

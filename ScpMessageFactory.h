@@ -13,6 +13,8 @@ Copyright (C) 2018 Benjamin Schilling
 #include "Arduino.h"
 
 #include "ScpDebug.h"
+#include "ScpPassword.h"
+#include "ScpCrypto.h"
 
 #define  PW_LENGTH 16
 
@@ -29,7 +31,7 @@ public:
 //Control Messages
 
   /**
-   * @brief Create a Message Control Up object
+   * @brief Create a Message Control Up string
    * 
    * @param deviceID 
    * @param status 
@@ -38,7 +40,7 @@ public:
   String createMessageControlUp(String deviceID, String status);
 
   /**
-   * @brief Create a Message Control Down object
+   * @brief Create a Message Control Down string
    * 
    * @param deviceID 
    * @param status 
@@ -47,7 +49,7 @@ public:
   String createMessageControlDown(String deviceID, String status);
 
   /**
-   * @brief Create a Message Control Stop object
+   * @brief Create a Message Control Stop string
    * 
    * @param deviceID 
    * @param status 
@@ -56,7 +58,7 @@ public:
   String createMessageControlStop(String deviceID, String status);
 
   /**
-   * @brief Create a Message Control Status object
+   * @brief Create a Message Control Status string
    * 
    * @param deviceID 
    * @param status 
@@ -67,31 +69,31 @@ public:
 // Security Messages
 
   /**
-   * @brief Create a Message Security Fetch I V object
+   * @brief Create a Message Security Fetch NVCN string
    * 
    * @param deviceID 
    * @param ivString 
    * @return String 
    */
-  String createMessageSecurityFetchIV(String deviceID,String ivString);
+  String createMessageSecurityFetchNVCN(String deviceID,String nvcnString);
 
   /**
-   * @brief Create a Message Security Pw Change object
+   * @brief Create a Message Security Pw Change string
    * 
    * @param status 
    * @return String 
    */
-  String createMessageSecurityPwChange(String status);
+  String createMessageSecurityPwChange(String deviceID, String numberOfPasswordChanges, String status);
 
   /**
-   * @brief Create a Message Security Wifi Config object
+   * @brief Create a Message Security Wifi Config string
    * 
    * @return String 
    */
   String createMessageSecurityWifiConfig();
 
   /**
-   * @brief Create a Message Security Reset To Default object
+   * @brief Create a Message Security Reset To Default string
    * 
    * @param status 
    * @return String 
@@ -104,15 +106,19 @@ public:
    * @brief Create a Message Discover Hello object
    * 
    * @param deviceID 
-   * @param ipAddress 
+   * @param deviceType 
    * @param defaultPWresult 
    * @param hmac 
    * @return String 
    */
-  String createMessageDiscoverHello(String deviceID, String ipAddress, String defaultPWresult, String hmac);
+  String createMessageDiscoverHello(String deviceID, String deviceType);
 
 private:
   ScpDebug scpDebug;
+  ScpPassword password;
+  ScpCrypto crypto;
+
+  String hmacForString(String string);
 };
 
 #endif

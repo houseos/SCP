@@ -27,7 +27,7 @@ bool ScpPassword::isDefaultPasswordSetOnce()
 
 void ScpPassword::writePassword(String password)
 {
-  scpDebug.println("    ScpPassword.writePassword: Setting " + password + "as new password");
+  scpDebug.println("    ScpPassword.writePassword: Setting " + password + " as new password");
   scpEeprom.setPassword(password);
 }
 
@@ -38,12 +38,12 @@ String ScpPassword::readPassword()
 }
 
 void ScpPassword::storeCurrentPasswordNumber(uint32_t number) {
-  scpDebug.println("    ScpPassword.storeCurrentPasswordNumber: Number of password: " + number);
-scpEeprom.setCurrentPwNumber(number);
+  scpDebug.println("    ScpPassword.storeCurrentPasswordNumber: new current password number: " + String(number));
+  scpEeprom.setCurrentPwNumber(number);
 }
 
 uint32_t ScpPassword::readCurrentPasswordNumber() {
-return scpEeprom.getCurrentPwNumber();
+  return scpEeprom.getCurrentPwNumber();
 }
 
 void ScpPassword::storePasswordInIntArray(uint8_t buffer[], uint8_t buffer_length)

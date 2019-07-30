@@ -2,43 +2,43 @@
 
 ## Table of contents
 
-- [secure-control-protocol - Work in progress](#secure-control-protocol---work-in-progress)
-  - [Table of contents](#table-of-contents)
-  - [Hint](#hint)
-  - [0. About](#0-about)
-    - [0.1 Purpose](#01-purpose)
-    - [0.2 Goal](#02-goal)
-  - [1. Architecture](#1-architecture)
-  - [2. Provisioning of devices](#2-provisioning-of-devices)
-  - [3. Discovery of devices](#3-discovery-of-devices)
-  - [4. Security](#4-security)
-  - [5. HTTP Ressources](#5-http-ressources)
-  - [6. REST Message Types](#6-rest-message-types)
-    - [6.1 Discover message types](#61-discover-message-types)
+- [secure-control-protocol - Work in progress](#secure-control-protocol---Work-in-progress)
+  - [Table of contents](#Table-of-contents)
+  - [Hint](#Hint)
+  - [0. About](#0-About)
+    - [0.1 Purpose](#01-Purpose)
+    - [0.2 Goal](#02-Goal)
+  - [1. Architecture](#1-Architecture)
+  - [2. Provisioning of devices](#2-Provisioning-of-devices)
+  - [3. Discovery of devices](#3-Discovery-of-devices)
+  - [4. Security](#4-Security)
+  - [5. HTTP Ressources](#5-HTTP-Ressources)
+  - [6. REST Message Types](#6-REST-Message-Types)
+    - [6.1 Discover message types](#61-Discover-message-types)
       - [6.1.1 discover-hello](#611-discover-hello)
-        - [Variables](#variables)
-    - [6.2 Control messages](#62-control-messages)
+        - [Variables](#Variables)
+    - [6.2 Control messages](#62-Control-messages)
       - [6.2.1 control-up](#621-control-up)
       - [6.2.2 control-down](#622-control-down)
       - [6.2.3 control-stop](#623-control-stop)
       - [6.2.4 control-status](#624-control-status)
-    - [6.3 Security messages](#63-security-messages)
+    - [6.3 Security messages](#63-Security-messages)
       - [6.3.1 security-fetch-nvcn](#631-security-fetch-nvcn)
       - [6.3.2 security-pw-change](#632-security-pw-change)
       - [6.3.3 security-wifi-config](#633-security-wifi-config)
       - [6.3.4 security-reset-to-default](#634-security-reset-to-default)
       - [6.3.5 security-restart](#635-security-restart)
-  - [7. SCP Stack Software Architecture](#7-scp-stack-software-architecture)
-    - [7.1 Used Libraries](#71-used-libraries)
-    - [7.2 Class Diagrams](#72-class-diagrams)
-  - [8. Annex](#8-annex)
-    - [8.1 Default credentials](#81-default-credentials)
-      - [8.1.1 Default device password](#811-default-device-password)
-      - [8.1.2 Default Wifi Access Point credentials](#812-default-wifi-access-point-credentials)
-    - [8.2 ESP8266 EEPROM Layout](#82-esp8266-eeprom-layout)
-  - [Project Philosophy](#project-philosophy)
-  - [License](#license)
-  - [Copyright](#copyright)
+  - [7. SCP Stack Software Architecture](#7-SCP-Stack-Software-Architecture)
+    - [7.1 Used Libraries](#71-Used-Libraries)
+    - [7.2 Class Diagrams](#72-Class-Diagrams)
+  - [8. Annex](#8-Annex)
+    - [8.1 Default credentials](#81-Default-credentials)
+      - [8.1.1 Default device password](#811-Default-device-password)
+      - [8.1.2 Default Wifi Access Point credentials](#812-Default-Wifi-Access-Point-credentials)
+    - [8.2 ESP8266 EEPROM Layout](#82-ESP8266-EEPROM-Layout)
+  - [Project Philosophy](#Project-Philosophy)
+  - [License](#License)
+  - [Copyright](#Copyright)
 
 ## Hint
 A PDF version of this README with all images is stored in the `./doc/` directory.
@@ -159,11 +159,11 @@ client -> server : Connect to wifi
 
 server --> client : Assign IP address
 
-client -> server : Get device information from /secure-control-discover-hello
+client -> server : Get device information from /secure-control/discover-hello
 
 server --> client : Send discover-response
 
-client -> server : Get NVCN from /secure-control-security-fetch-NVCN
+client -> server : Get NVCN from /secure-control/security-fetch-iv
 
 server -> server : Generate new NVCN
 
@@ -177,7 +177,7 @@ server --> client : Respond with result
 
 user -> client : Enter WiFi credentials
 
-client -> server : Get NVCN from /secure-control-security-fetch-NVCN
+client -> server : Get NVCN from /secure-control/security-fetch-ncvn
 
 server -> server : Generate new NVCN
 
@@ -191,7 +191,7 @@ server --> client : Respond with result
 
 user -> client : Trigger device restart
 
-client -> server : Get NVCN from /secure-control-security-fetch-NVCN
+client -> server : Get NVCN from /secure-control/security-fetch-nvcn
 
 server -> server : Generate new NVCN
 
@@ -386,7 +386,7 @@ hmac = "discover-response" + deviceID + deviceType + IP Address + current passwo
     "type" : "discover-response",
     "deviceId" : "device ID",
     "deviceType" : "secure-controller",
-    "currentPasswordNumber" : number of password changes   ,
+    "currentPasswordNumber" : number of password changes,
     "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
@@ -419,7 +419,8 @@ The encrypted payload of the response consists of a JSON representation of the f
 {
     "type" : "control-up",
     "deviceId" : "device ID",
-    "status" : "neutral" | "up" | "error"
+    "status" : "neutral" | "up" | "error",
+    "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
 The status vaules have the following meaning:
@@ -452,7 +453,8 @@ The encrypted payload of the response consists of a JSON representation of the f
 {
     "type" : "control-down",
     "deviceId" : "device ID",
-    "status" : "neutral" | "down" | "error"
+    "status" : "neutral" | "down" | "error",
+    "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
 The status vaules have the following meaning:
@@ -491,7 +493,8 @@ The encrypted payload of the response consists of a JSON representation of the f
 {
     "type" : "control-stop",
     "deviceId" : "device ID",
-    "status" : "neutral" | "stop" | "error"
+    "status" : "neutral" | "stop" | "error",
+    "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
 The status vaules have the following meaning:
@@ -528,7 +531,8 @@ The encrypted payload of the response consists of a JSON representation of the f
 {
     "type" : "control-status",
     "deviceId" : "device ID",
-    "status" : "neutral" | up | down | "error"
+    "status" : "neutral" | up | down | "error",
+    "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
 The status vaules have the following meaning:
@@ -566,7 +570,8 @@ The unencrypted payload of the response consists of a JSON representation of the
 {
     "type" : "security-fetch-nvcn",
     "deviceId" : "device ID",
-    "nvcn" : Stored initialization vector
+    "nvcn" : Stored initialization vector,
+    "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
 
@@ -576,7 +581,7 @@ The security-pw-change message tells the device to change it's old password to t
 
 Additionally the deviceID provided in the payload must match the configured device ID.
 
-decrypted payload = deviceID:security-pw-change:new password
+`decrypted payload = NVCN:deviceID:security-pw-change:new-password`
 
 Hint:
 The old password does not has to be send because it is used by the device for the encryption of the message.
@@ -590,7 +595,10 @@ The encrypted payload of the response consists of a JSON representation of the f
 ```
 {
     "type" : "security-pw-change",
-    "result" : done / error
+    "deviceId" : "device ID",
+    "currentPasswordNumber" : number of password changes,
+    "result" : done / error,
+    "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
 
@@ -600,7 +608,7 @@ The security-wifi-change message tells the device to set the Wifi client credent
 
 Additionally the deviceID provided in the payload must match the configured device ID.
 
-decrypted payload = deviceID:security-wifi-config:ssid:pre-shared-key
+`decrypted payload = NVCN:deviceID:security-wifi-config:ssid:pre-shared-key`
 
 The encrypted payload of the response consists of a JSON representation of the following data:
 
@@ -611,7 +619,9 @@ The encrypted payload of the response consists of a JSON representation of the f
 ```
 {
     "type" : "security-wifi-config",
-    "result" : successfull / failed / error
+    "deviceId" : "device ID",
+    "result" : successfull / failed / error,
+    "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
 
@@ -620,7 +630,7 @@ The encrypted payload of the response consists of a JSON representation of the f
 The security-reset-to-default message tells the device to reset all persistent changes 
 to the factory default settings, e.g. the password.
 
-decrypted payload = deviceID:security-reset-to-default
+`decrypted payload = NVCN:deviceID:security-reset-to-default`
 
 The encrypted payload of the response consists of a JSON representation of the following data:
 
@@ -631,7 +641,9 @@ The encrypted payload of the response consists of a JSON representation of the f
 ```
 {
     "type" : "security-reset-to-default",
-    "result" : done / error
+    "deviceId" : "device ID",
+    "result" : done / error,
+    "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
 
@@ -639,7 +651,7 @@ The encrypted payload of the response consists of a JSON representation of the f
 
 The security-restart message tells the device to apply a new configuration by restarting.
 
-decrypted payload = deviceID:security-restart
+`decrypted payload = NVCN:deviceID:security-restart`
 
 The encrypted payload of the response consists of a JSON representation of the following data:
 
@@ -650,7 +662,9 @@ The encrypted payload of the response consists of a JSON representation of the f
 ```
 {
     "type" : "security-restart",
-    "result" : done / error
+    "deviceId" : "device ID",
+    "result" : done / error,
+    "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
 

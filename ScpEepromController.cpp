@@ -15,8 +15,7 @@ Copyright (C) 2018 Benjamin Schilling
 
 ScpEepromController::ScpEepromController()
 {
-   scpDebug.println(getPassword());
-
+   scpDebug.println(scpDebug.eeprom, getPassword());
 }
 
 /**
@@ -28,16 +27,12 @@ bool ScpEepromController::isDeviceIdSet()
 {
   if ((EEPROM.read(FLAGS_ADDRESS) & 0x02) == 0x02 )
   {
-    #ifdef DEBUG
-    Serial.println("      ScpEepromController.isDeviceIdSet: DeviceID set");
-    #endif
+    scpDebug.println(scpDebug.eeprom, "      ScpEepromController.isDeviceIdSet: DeviceID set");
     return true;
   }
   else
   {
-    #ifdef DEBUG
-    Serial.println("      ScpEepromController.isDeviceIdSet: DeviceID not set");
-    #endif
+    scpDebug.println(scpDebug.eeprom, "      ScpEepromController.isDeviceIdSet: DeviceID not set");
     return false;
   }
 }
@@ -61,16 +56,12 @@ bool ScpEepromController::isDefaultPasswordSet()
 {
   if ((EEPROM.read(FLAGS_ADDRESS) & 0x01) == 0x01 )
   {
-    #ifdef DEBUG
-    Serial.println("      ScpEepromController.isDefaultPasswordSet: Default Password set");
-    #endif
+    scpDebug.println(scpDebug.eeprom, "      ScpEepromController.isDefaultPasswordSet: Default Password set");
     return true;
   }
   else
   {
-    #ifdef DEBUG
-    Serial.println("      ScpEepromController.isDefaultPasswordSet: Default Password not set");
-    #endif
+    scpDebug.println(scpDebug.eeprom, "      ScpEepromController.isDefaultPasswordSet: Default Password not set");
     return false;
   }
 }
@@ -95,9 +86,9 @@ String ScpEepromController::getPassword()
     String password = "";
     for (int i = PW_ADDRESS; i <= PW_LENGTH; i++)
     {
-        scpDebug.println("      ScpEepromController.getPassword: EEPROM Addr: " + String(i));
+        scpDebug.println(scpDebug.eeprom, "      ScpEepromController.getPassword: EEPROM Addr: " + String(i));
         password = password + char(EEPROM.read(i));
-        scpDebug.println("      ScpEepromController.getPassword: char " + String(char(EEPROM.read(i))));
+        scpDebug.println(scpDebug.eeprom, "      ScpEepromController.getPassword: char " + String(char(EEPROM.read(i))));
     }
     return password;
 }
@@ -126,17 +117,17 @@ uint32_t ScpEepromController::getCurrentPwNumber()
    uint32_t currentPasswordNumber = 0;
 
    currentPasswordNumber = (EEPROM.read(CURRENT_PW_NUMBER_ADDRESS) << 24);
-   scpDebug.println("      ScpEepromController.getCurrentPwNumber: Current Password Number Byte:" + String(EEPROM.read(CURRENT_PW_NUMBER_ADDRESS) << 24));
-   scpDebug.println("      ScpEepromController.getCurrentPwNumber: Current Password Number Result:" + String(currentPasswordNumber));
+   scpDebug.println(scpDebug.eeprom, "      ScpEepromController.getCurrentPwNumber: Current Password Number Byte:" + String(EEPROM.read(CURRENT_PW_NUMBER_ADDRESS) << 24));
+   scpDebug.println(scpDebug.eeprom, "      ScpEepromController.getCurrentPwNumber: Current Password Number Result:" + String(currentPasswordNumber));
    currentPasswordNumber += (EEPROM.read(CURRENT_PW_NUMBER_ADDRESS + 1) << 16);
-   scpDebug.println("      ScpEepromController.getCurrentPwNumber: Current Password Number Byte:" + String(EEPROM.read(CURRENT_PW_NUMBER_ADDRESS) << 16));
-   scpDebug.println("      ScpEepromController.getCurrentPwNumber: Current Password Number Result:" + String(currentPasswordNumber));
+   scpDebug.println(scpDebug.eeprom, "      ScpEepromController.getCurrentPwNumber: Current Password Number Byte:" + String(EEPROM.read(CURRENT_PW_NUMBER_ADDRESS) << 16));
+   scpDebug.println(scpDebug.eeprom, "      ScpEepromController.getCurrentPwNumber: Current Password Number Result:" + String(currentPasswordNumber));
    currentPasswordNumber += (EEPROM.read(CURRENT_PW_NUMBER_ADDRESS + 2) << 8);
-   scpDebug.println("      ScpEepromController.getCurrentPwNumber: Current Password Number Byte:" + String(EEPROM.read(CURRENT_PW_NUMBER_ADDRESS) << 8));
-   scpDebug.println("      ScpEepromController.getCurrentPwNumber: Current Password Number Result:" + String(currentPasswordNumber));
+   scpDebug.println(scpDebug.eeprom, "      ScpEepromController.getCurrentPwNumber: Current Password Number Byte:" + String(EEPROM.read(CURRENT_PW_NUMBER_ADDRESS) << 8));
+   scpDebug.println(scpDebug.eeprom, "      ScpEepromController.getCurrentPwNumber: Current Password Number Result:" + String(currentPasswordNumber));
    currentPasswordNumber += EEPROM.read(CURRENT_PW_NUMBER_ADDRESS + 3);
-   scpDebug.println("      ScpEepromController.getCurrentPwNumber: Current Password Number Byte:" + String(EEPROM.read(CURRENT_PW_NUMBER_ADDRESS)));
-   scpDebug.println("      ScpEepromController.getCurrentPwNumber: Current Password Number Result:" + String(currentPasswordNumber));
+   scpDebug.println(scpDebug.eeprom, "      ScpEepromController.getCurrentPwNumber: Current Password Number Byte:" + String(EEPROM.read(CURRENT_PW_NUMBER_ADDRESS)));
+   scpDebug.println(scpDebug.eeprom, "      ScpEepromController.getCurrentPwNumber: Current Password Number Result:" + String(currentPasswordNumber));
 
    return currentPasswordNumber;
 }
@@ -148,12 +139,12 @@ uint32_t ScpEepromController::getCurrentPwNumber()
    */
 void ScpEepromController::setCurrentPwNumber(uint32_t currentPwNumber)
 {
-   scpDebug.println("      ScpEepromController.setCurrentPwNumber: Current Password Number to be set:" + String(currentPwNumber));
+   scpDebug.println(scpDebug.eeprom, "      ScpEepromController.setCurrentPwNumber: Current Password Number to be set:" + String(currentPwNumber));
    
-   scpDebug.println("      ScpEepromController.setCurrentPwNumber: Current Password Number to be set byte 0:" + String((currentPwNumber >> 24) & 0x000000FF));
-   scpDebug.println("      ScpEepromController.setCurrentPwNumber: Current Password Number to be set byte 1:" + String((currentPwNumber >> 16) & 0x000000FF));
-   scpDebug.println("      ScpEepromController.setCurrentPwNumber: Current Password Number to be set byte 2:" + String((currentPwNumber >> 8) & 0x000000FF));
-   scpDebug.println("      ScpEepromController.setCurrentPwNumber: Current Password Number to be set byte 3:" + String(currentPwNumber & 0x000000FF));
+   scpDebug.println(scpDebug.eeprom, "      ScpEepromController.setCurrentPwNumber: Current Password Number to be set byte 0:" + String((currentPwNumber >> 24) & 0x000000FF));
+   scpDebug.println(scpDebug.eeprom, "      ScpEepromController.setCurrentPwNumber: Current Password Number to be set byte 1:" + String((currentPwNumber >> 16) & 0x000000FF));
+   scpDebug.println(scpDebug.eeprom, "      ScpEepromController.setCurrentPwNumber: Current Password Number to be set byte 2:" + String((currentPwNumber >> 8) & 0x000000FF));
+   scpDebug.println(scpDebug.eeprom, "      ScpEepromController.setCurrentPwNumber: Current Password Number to be set byte 3:" + String(currentPwNumber & 0x000000FF));
 
     EEPROM.write(CURRENT_PW_NUMBER_ADDRESS, uint8_t((currentPwNumber >> 24) & 0x000000FF));
     EEPROM.write(CURRENT_PW_NUMBER_ADDRESS + 1, uint8_t((currentPwNumber >> 16) & 0x000000FF));

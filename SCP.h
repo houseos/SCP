@@ -32,7 +32,7 @@ public:
    * @brief 
    * 
    */
-  void init(String deviceType);
+  void init(String deviceType, bool enableLog = false);
 
     /**
    * @brief 

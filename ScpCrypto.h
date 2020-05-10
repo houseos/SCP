@@ -77,7 +77,7 @@ public:
  * @return uint8_t* 
  */
   uint8_t *getIVPlain();
-
+  
 private:
   uint8_t iv[BLOCK_SIZE];
 };

@@ -9,12 +9,12 @@ Copyright (C) 2018 Benjamin Schilling
 
 #include "ScpDebug.h"
 
-ScpDebug::ScpDebug(){
-
+ScpDebug::ScpDebug(bool enableLog){
+    this->enableLog = enableLog;
 }
 
-void ScpDebug::println(String debugString){
-    #ifdef DEBUG
+void ScpDebug::println(logClass_t logClass, String debugString){
+    if(this->enableLog){
         Serial.println(debugString);
-    #endif
+    }
 }

@@ -88,9 +88,11 @@ String ScpMessageFactory::createMessageDiscoverHello(String deviceID, String dev
     return message;
 }
 
+String ScpMessageFactory::hmacForString(String string)
+{
 
-String ScpMessageFactory::hmacForString(String string){
-
+    return "";
+    /*
     scpDebug.println(scpDebug.messageFactory, "  SCP.handleDiscoverHello -> createMessageDiscoverHello:  ToHmac: " + string);
 
     uint8_t key[BLOCK_SIZE];
@@ -118,4 +120,5 @@ String ScpMessageFactory::hmacForString(String string){
     rbase64.encode(hmacBytes, SHA256HMAC_SIZE);
 
     return rbase64.result();
+    */
 }

@@ -34,7 +34,7 @@ public:
    */
   void init(String deviceType, bool enableLog = false);
 
-    /**
+  /**
    * @brief 
    * 
    */
@@ -43,7 +43,7 @@ public:
   void registerControlUpFunction(std::function<void()> fun);
 
   void registerControlDownFunction(std::function<void()> fun);
-   
+
   void registerControlStopFunction(std::function<void()> fun);
 
 private:
@@ -62,19 +62,12 @@ private:
   std::function<void()> controlDownFunction;
   std::function<void()> controlStopFunction;
 
-
   // HTTP Endpoints
   /**
    * @brief 
    * 
    */
   void handleSecureControl();
-
-  /**
-   * @brief 
-   * 
-   */
-  void handleSecurityFetchNVCN();
 
   /**
    * @brief 
@@ -88,13 +81,12 @@ private:
    */
   void handleNotFound();
   // HTTP Error Methods
-  
+
   /**
    * @brief 
    * 
    */
   void sendMalformedPayload();
-
 };
 
 #endif

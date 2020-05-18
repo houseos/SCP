@@ -2,46 +2,74 @@
 
 ## Table of contents
 
-- [secure-control-protocol - Work in progress](#secure-control-protocol---Work-in-progress)
-  - [Table of contents](#Table-of-contents)
-  - [Hint](#Hint)
-  - [0. About](#0-About)
-    - [0.1 Purpose](#01-Purpose)
-    - [0.2 Goal](#02-Goal)
-  - [1. Architecture](#1-Architecture)
-  - [2. Provisioning of devices](#2-Provisioning-of-devices)
-  - [3. Discovery of devices](#3-Discovery-of-devices)
-  - [4. Security](#4-Security)
-  - [5. HTTP Ressources](#5-HTTP-Ressources)
-  - [6. REST Message Types](#6-REST-Message-Types)
-    - [6.1 Discover message types](#61-Discover-message-types)
+- [secure-control-protocol - Work in progress](#secure-control-protocol---work-in-progress)
+  - [Table of contents](#table-of-contents)
+  - [Hint](#hint)
+  - [Terms and abbreviations](#terms-and-abbreviations)
+  - [0. About](#0-about)
+    - [0.1 Purpose](#01-purpose)
+    - [0.2 Goal](#02-goal)
+  - [1. Architecture](#1-architecture)
+  - [2. Provisioning of devices](#2-provisioning-of-devices)
+  - [3. Discovery of devices](#3-discovery-of-devices)
+  - [4. Security](#4-security)
+    - [4.1 Storage of Wifi Credentials on the device](#41-storage-of-wifi-credentials-on-the-device)
+  - [5. HTTP Ressources](#5-http-ressources)
+    - [5.1 Typical message flow](#51-typical-message-flow)
+  - [6. REST Message Types](#6-rest-message-types)
+    - [6.1 Discover message types](#61-discover-message-types)
       - [6.1.1 discover-hello](#611-discover-hello)
-        - [Variables](#Variables)
-    - [6.2 Control messages](#62-Control-messages)
+        - [Variables](#variables)
+    - [6.2 Control messages](#62-control-messages)
       - [6.2.1 control-up](#621-control-up)
       - [6.2.2 control-down](#622-control-down)
       - [6.2.3 control-stop](#623-control-stop)
       - [6.2.4 control-status](#624-control-status)
-    - [6.3 Security messages](#63-Security-messages)
+    - [6.3 Security messages](#63-security-messages)
       - [6.3.1 security-fetch-nvcn](#631-security-fetch-nvcn)
       - [6.3.2 security-pw-change](#632-security-pw-change)
       - [6.3.3 security-wifi-config](#633-security-wifi-config)
       - [6.3.4 security-reset-to-default](#634-security-reset-to-default)
       - [6.3.5 security-restart](#635-security-restart)
-  - [7. SCP Stack Software Architecture](#7-SCP-Stack-Software-Architecture)
-    - [7.1 Used Libraries](#71-Used-Libraries)
-    - [7.2 Class Diagrams](#72-Class-Diagrams)
-  - [8. Annex](#8-Annex)
-    - [8.1 Default credentials](#81-Default-credentials)
-      - [8.1.1 Default device password](#811-Default-device-password)
-      - [8.1.2 Default Wifi Access Point credentials](#812-Default-Wifi-Access-Point-credentials)
-    - [8.2 ESP8266 EEPROM Layout](#82-ESP8266-EEPROM-Layout)
-  - [Project Philosophy](#Project-Philosophy)
-  - [License](#License)
-  - [Copyright](#Copyright)
+  - [7. SCP Stack Software Architecture](#7-scp-stack-software-architecture)
+    - [7.1 Used Libraries](#71-used-libraries)
+    - [7.2 Class Diagrams](#72-class-diagrams)
+  - [8. Annex](#8-annex)
+    - [8.1 Default credentials](#81-default-credentials)
+      - [8.1.1 Default device password](#811-default-device-password)
+      - [8.1.2 Default Wifi Access Point credentials](#812-default-wifi-access-point-credentials)
+    - [8.2 ESP8266 EEPROM Layout](#82-esp8266-eeprom-layout)
+  - [Project Philosophy](#project-philosophy)
+  - [Versions](#versions)
+    - [0.0.2](#002)
+    - [0.0.1](#001)
+  - [License](#license)
+  - [Copyright](#copyright)
 
 ## Hint
 A PDF version of this README with all images is stored in the `./doc/` directory.
+
+## Terms and abbreviations
+
+The following terms and abbreviations are used in this document.
+
+| Term     | Description                             |
+| -------- | --------------------------------------- |
+| ESP8266  | Cheap Wifi Microcontroller by espressif |
+| ChaCha20 | Symmetric Cryptography Cipher           |
+| Poly1305 | Cryptographic MAC                       |
+|          |                                         |
+
+| Abbreviation | Description                                   |
+| ------------ | --------------------------------------------- |
+| SCP          | Secure Control Protocol                       |
+| PSK          | Pre-shared Key                                |
+| AEAD         | Authenticated Encryption with Associated Data |
+| MAC          | Message Authentication Code                   |
+| Nonce        | Number-used-once                              |
+| HMAC         | Keyed-Hash Message Authenitcation Code        |
+| NVCN         | Next valid control number                     |
+
 
 ## 0. About
 
@@ -119,17 +147,23 @@ client ..> storage : Store passwords
 
 ## 2. Provisioning of devices
 
-When the default password of the secure-controller is set or no wifi credentials are provisioned the secure-controller provides a Wifi Access Point using WPA2-PSK which can be accessed with the [default credentials from the annex](#81-default-credentials).
+When the default password of the secure-controller is set or no Wifi credentials are provisioned the secure-controller provides a Wifi Access Point using WPA2-PSK which can be accessed with the [default credentials from the annex](#81-default-credentials).
 
-When the Wifi Access Point is available the control device connects to the wifi and the secure-controller acts as a DHCP server and provides an IP address from a small Class C IP subnet.
+When the Wifi Access Point is available the control device connects to the Wifi and the secure-controller acts as a DHCP server and provides an IP address from a small Class C IP subnet.
 
-Now the control device can start the discovery of secure-controller in the IP subnet. If the secure-controller is found a new secure-control password must be set. This can be done via the [security-pw-change message](#632-security-pw-change). As a second step the credentials of the home network wifi the secure-controller operates in should be supplied. The user sends a the [security-wifi-config message](#633-security-wifi-config) containing the encrypted credentials to the secure-controller. 
+Now the control device can start the discovery of secure-controller in the IP subnet. 
+If the secure-controller is found a new secure-control password must be set. 
+This can be done via the [security-pw-change message](#632-security-pw-change). 
+As a second step the credentials of the home network Wifi where the secure-controller operates in should be supplied. 
+The user sends a the [security-wifi-config message](#633-security-wifi-config) containing the encrypted credentials to the secure-controller. 
 
 If a secure-controller receives a valid [security-wifi-config message](#633-security-wifi-config) it tries to connect to the wifi and reponds with the result.
 
-The third step is triggered by the [security-reset message](#635-security-restart) which restarts the secure-controller and thus applies the configured settings. If the secure-controller default password and the wifi credentials are changed / provisined, the secure-controller is started as in the wifi client only mode.
+The third step is triggered by the [security-reset message](#635-security-restart) which restarts the secure-controller and thus applies the configured settings. 
+If the secure-controller default password and the wifi credentials are changed / provisioned, the secure-controller is started in the Wifi client only mode.
 
-*__Note:__* If the connection to the supplied home network wifi fails, the secure-controller acts as a wifi access point in order to receive the new home network credentials. But in contrast to the beginning of this chapter the password for this wifi will now be the provisioned secure-controller password.
+*__Note:__* If the connection to the supplied home network Wifi fails, the secure-controller acts as a Wifi access point in order to receive the new home network credentials. 
+But in contrast to the beginning of this chapter the password for this Wifi will now be the provisioned secure-controller password.
 
 ```puml
 
@@ -212,11 +246,11 @@ end note
 
 ## 3. Discovery of devices
 
-The Android app acts as a control device and is capable of discovering devices in the local subnet network range.
+The SCP Client acts as a managing device and is capable of discovering devices in the local subnet network range.
 
-To do this the app connects to the secure-control-discover-hello ressource of each IP addresses of the configured IP address range.
+To do this the client connects to the secure-control-discover-hello ressource of each IP addresses of the configured IP address range.
 
-The app stores the IP addresses of all devices which respond with a HTTP response 200 OK with information in the body.
+The client stores the IP addresses of all devices which respond with a HTTP response 200 OK with information in the body.
 
 ```puml
 
@@ -228,7 +262,7 @@ scale max 650 width
 
 participant ":SCP Server 1" as server1
 participant ":SCP Server 2" as server2
-participant ":Generic HTTP Server" as webserver
+participant ":Other Webserver" as webserver
 participant ":Device w/o webserver" as device
 participant ":SCP Client" as client
 
@@ -250,22 +284,42 @@ webserver --> client : Respond with HTTP 404 Not found
 
 ## 4. Security
 
-The security is based on pre-shared secrets. Each device has its own secret. The secret is only shared between the secure-controller and the control device(s).
+The security is based on pre-shared secrets. 
+Each device has its own secret. 
+The secret is only shared between the secure-controller and the client device(s).
 
-Each secure-controller has a preconfigured password which has to be changed when the secure-controller is first accessed. The secure-controller does __not__ accept any [control messages](#62-control-messages) or [security messages](#63-security-messages) (besides the [security-pw-change message](#632-security-pw-change)) if the current secure-controller password matches the [default password from the annex](#811-default-device-password).
+Each secure-controller has a preconfigured password which has to be changed when the secure-controller is first accessed. 
+The secure-controller does __not__ accept any [control messages](#62-control-messages) or [security messages](#63-security-messages) (besides the [security-pw-change message](#632-security-pw-change)) if the current secure-controller password matches the [default password from the annex](#811-default-device-password).
 
-The password has the be 16 characters long. This ensures a adequate security due to the large key space. The password will usually not be used by a human user. The secret is set by the controller device and sored in the secure-controller. Therefore the length limitation does not pose a usability problem.   
+The password has to be 32 characters long. 
+The length is given by the ChaCha20 encryption algorithm. 
+The password will usually not be used by a human user since the whole provisioning is an automated process. 
+The secret is set by the client device and sored in the secure-controller. 
+Therefore the length limitation does not pose a usability problem.   
 
-All (except for [6.1.1 discover-hello](#611-discover-hello)) exchanged messages are encrypted. The method used is AES-128-CBC with the shared password, a NVCN and an initialization vector (IV).
+All (except for [6.1.1 discover-hello](#611-discover-hello)) exchanged messages are encrypted. 
+The method used is ChaCha20 Poly1305 with the pre-shared key, a nonce and a salt in the payload.
 
-To prevent attacks on the content / password of the exchanged messages an additional measure is taken. For every message an intitialzation vector is generated (a 128 bit random number). This number is generated by the sender of the message. It is added at the beginning of the message contents. 
+`ChaCha20_Poly1305(<key>, <nonce>, <payload>) = Encrypted Message, MAC`
 
-The NVCN shall prevent replay attacks and needs to be fetched from the secure-controller by the control device for every single message before encrypting it. The correctness of the supplied NVCN of each message is checked by the secure-controller.
+`payload(<salt> + ":" + <NVCN> + ":" + <plain text>)`
+
+The NVCN shall prevent replay attacks and needs to be fetched from the secure-controller by the control device for every single message before encrypting it. 
+The correctness of the supplied NVCN of each message is checked by the secure-controller.
+
+The salt in the payload is used to strengthen the encryption by reducing the possibility of using the same key, nonce and payload for the encryption.
+
+### 4.1 Storage of Wifi Credentials on the device
+
+To protect the Wifi credentials on the device, they are encrypted using a hardware based key dervication function.
+
 
 *__Currently not covered:__*
 
-No hardware attacks are currently considered. The flash memory of the secure-controller stores the secure-controller password which could be read and missused. This attack is considered to be unlikely and of limited use only since every device has a seperate password. Never the less any ideas / comments on this issue are very welcome. 
-
+No hardware attacks are currently considered.
+The flash memory of the secure-controller stores the secure-controller password which could be read and missused. 
+This attack is considered to be unlikely and of limited use only since every device has a seperate password. 
+Never the less any ideas / comments on this issue are very welcome. 
 
 ## 5. HTTP Ressources
 
@@ -281,44 +335,11 @@ http://device-ip/secure-control/discover-hello
 http://device-ip/secure-control/security-fetch-NVCN
 ```
 
-## 6. REST Message Types
+### 5.1 Typical message flow
 
-The secure-controller waits for HTTP-GET messages with the Content-Type application/x-www-form-urlencoded.
-
-Almost all messages are encrypted, see [security chapter](#4-security) for details on the algorithms and exceptions.
-
-The initialization vector (NVCN) used for replay protection is randomly generated on secure-controller start-up. It is being fetched from the control device by using the security-fetch-NVCN message before sending a message to the secure-controller. The NVCN is incremented by the secure-controller after every [security-fetch-NVCN message](#631-security-fetch-NVCN).
-
-For all encrypted messages the following HTTP ressource is used:
-```
-http://device-ip/secure-control
-```
-
-The data send to the secure-controller is encoded in the payload parameter.
-```
-http://device-ip/secure-control?payload=encoded_data
-```
-
-The encoded_data consists of the base64 and urlencoded encrypted message.
-```
-encoded_data = urlencode(base64(encrypted_message))
-```
-The encrypted_message consists of a IV, the device ID of the secure-controller, the NVCN and the type of the message. The NVCN, the device ID and the type are being concetenated. As seperator a colon is used. The message is then encrypted using the IV and the secure-controller password.
-```
-encrypted_message = IV + encrypt(NVCN + ":" + deviceID + ":" + message_type, IV, password)
-```
-
-All messages except for the discover-hello message, respond with a HTTP 200 OK message containing a JSON object with the encrypted payload:
-
-| Key     | Possible values   |
-|---------|-------------------|
-| payload | encrypted-payload |
-```
-{
-    "payload" : "encrypted-payload"
-}
-``` 
-
+The NVCN used for replay protection is randomly generated on secure-controller start-up. 
+It is being fetched from the control device by using the security-fetch-NVCN message before sending a message to the secure-controller. 
+The NVCN is incremented by the secure-controller after every [security-fetch-NVCN message](#631-security-fetch-NVCN).
 
 ```puml
 
@@ -357,6 +378,51 @@ server --> client : Send response
 
 ```
 
+## 6. REST Message Types
+
+The secure-controller waits for HTTP-GET messages with the Content-Type application/x-www-form-urlencoded.
+
+Almost all messages are encrypted, see [security chapter](#4-security) for details on the algorithms and exceptions.
+
+For all encrypted messages the following HTTP ressource is used:
+```
+http://device-ip/secure-control
+```
+
+The data send to the secure-controller is encoded in the following parameters.
+
+| Key     | Possible values      |
+| ------- | -------------------- |
+| payload | encrypted-payload    |
+| nonce   | base64 encoded Nonce |
+| mac     | base64 encoded MAC   |
+
+Example Request String:
+```
+http://device-ip/secure-control?payload=encoded_data&nonce=nonceValue&mac=macValue
+```
+
+The encoded_data consists of the base64 and urlencoded encrypted message:
+```
+encoded_data = urlencode(base64(encrypted_message))
+```
+
+The encrypted message consists of the payload described in Chapter 4.
+
+All messages except for the discover-hello message, respond with a HTTP 200 OK message containing a JSON object with the following elements:
+
+| Key     | Possible values      |
+| ------- | -------------------- |
+| payload | encrypted-payload    |
+| nonce   | base64 encoded Nonce |
+| mac     | base64 encoded MAC   |
+```
+{
+    "payload" : "encrypted-payload"
+    "nonce" : "base64 encoded Nonce"
+    "mac" : "base64 encoded MAC"
+}
+``` 
 
 ### 6.1 Discover message types
 
@@ -365,7 +431,9 @@ server --> client : Send response
 Ressource: http://device-ip/secure-control/discover-hello?payload=discover-hello
 ```
 
-The discover-hello message is sent to all IP addresses of the home network subnet to determine which IP addresses beloang to a secure-controller. It is the only message being sent without encryption. If the device is a secure-controller it responds with a HTTP 200 OK message containing a JSON representation of the following information.
+The discover-hello message is sent to all IP addresses of the home network subnet to determine which IP addresses beloang to a secure-controller. 
+It is the only message being sent without encryption. 
+If the device is a secure-controller it responds with a HTTP 200 OK message containing a JSON representation of the following information.
 
 The HMAC is calculated as follows:
 ```
@@ -375,7 +443,7 @@ hmac = "discover-response" + deviceID + deviceType + IP Address + current passwo
 ##### Variables
 
 | Key                     | Possible values                          |
-|-------------------------|------------------------------------------|
+| ----------------------- | ---------------------------------------- |
 | type                    | discover-response                        |
 | device-id               | device id (16 byte)                      |
 | device-type             | device type                              |
@@ -411,7 +479,7 @@ message_type=control-up
 The encrypted payload of the response consists of a JSON representation of the following data:
 
 | Key      | Possible values      |
-|----------|----------------------|
+| -------- | -------------------- |
 | type     | control-up           |
 | deviceId | device ID            |
 | status   | neutral / up / error |
@@ -423,10 +491,10 @@ The encrypted payload of the response consists of a JSON representation of the f
     "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
-The status vaules have the following meaning:
+The status values have the following meaning:
 
 | status    | description                                   |
-|-----------|-----------------------------------------------|
+| --------- | --------------------------------------------- |
 | "neutral" | the power to the motor is not connected       |
 | "up"      | the motor is turning towards upmost postition |
 | "error"   | some error occured                            |
@@ -445,7 +513,7 @@ message_type=control-down
 The encrypted payload of the response consists of a JSON representation of the following data:
 
 | Key      | Possible values        |
-|----------|------------------------|
+| -------- | ---------------------- |
 | type     | control-down           |
 | deviceId | device ID              |
 | status   | neutral / down / error |
@@ -457,13 +525,13 @@ The encrypted payload of the response consists of a JSON representation of the f
     "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
-The status vaules have the following meaning:
+The status values have the following meaning:
 
 | status    | description                                     |
-|-----------|-------------------------------------------------|
+| --------- | ----------------------------------------------- |
 | "neutral" | the power to the motor is not connected         |
 | "down"    | the motor is turning towards downmost postition |
-| "error"   | some error occured                              | 
+| "error"   | some error occured                              |
 
 
 #### 6.2.3 control-stop
@@ -485,7 +553,7 @@ message_type=control-stop
 The encrypted payload of the response consists of a JSON representation of the following data:
 
 | Key      | Possible values        |
-|----------|------------------------|
+| -------- | ---------------------- |
 | type     | control-stop           |
 | deviceId | device ID              |
 | status   | neutral / stop / error |
@@ -497,10 +565,10 @@ The encrypted payload of the response consists of a JSON representation of the f
     "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
-The status vaules have the following meaning:
+The status values have the following meaning:
 
 | status  | description                             |
-|---------|-----------------------------------------|
+| ------- | --------------------------------------- |
 | "stop"  | the power to the motor is not connected |
 | "error" | some error occured                      |
 
@@ -515,7 +583,7 @@ The control-status message returns the current status of the secure-controller t
 
 The deviceID provided in the payload must match the configured device ID.
 
-The NVCN provided in the payload must match (current_controller_NVCN-1).
+The NVCN provided in the payload must match (current_controller_NVCN - 1).
 
 The encoded_data payload is created according to [REST message types and encoding](#6-rest-message-types) using:
 message_type=control-status
@@ -523,7 +591,7 @@ message_type=control-status
 The encrypted payload of the response consists of a JSON representation of the following data:
 
 | Key      | Possible values             |
-|----------|-----------------------------|
+| -------- | --------------------------- |
 | type     | control-status              |
 | deviceId | device ID                   |
 | status   | neutral / up / down / error |
@@ -535,10 +603,10 @@ The encrypted payload of the response consists of a JSON representation of the f
     "hmac" : Keyed-Hashed Massage Authentication Code
 }
 ```
-The status vaules have the following meaning:
+The status values have the following meaning:
 
 | status  | description                                     |
-|---------|-------------------------------------------------|
+| ------- | ----------------------------------------------- |
 | "up"    | the motor is turning towards upmost postition   |
 | "down"  | the motor is turning towards downmost postition |
 | "stop"  | the power to the motor is not connected         |
@@ -563,7 +631,7 @@ encoded_data = deviceID
 The unencrypted payload of the response consists of a JSON representation of the following data:
 
 | Key  | Possible values                                 |
-|------|-------------------------------------------------|
+| ---- | ----------------------------------------------- |
 | type | security-fetch-nvcn                             |
 | nvcn | current secure-controller initialization vector |
 ```
@@ -589,7 +657,7 @@ The old password does not has to be send because it is used by the device for th
 The encrypted payload of the response consists of a JSON representation of the following data:
 
 | Key    | Possible values    |
-|--------|--------------------|
+| ------ | ------------------ |
 | type   | security-pw-change |
 | result | done / error       |
 ```
@@ -613,7 +681,7 @@ Additionally the deviceID provided in the payload must match the configured devi
 The encrypted payload of the response consists of a JSON representation of the following data:
 
 | Key    | Possible values              |
-|--------|------------------------------|
+| ------ | ---------------------------- |
 | type   | security-wifi-config         |
 | result | successfull / failed / error |
 ```
@@ -635,7 +703,7 @@ to the factory default settings, e.g. the password.
 The encrypted payload of the response consists of a JSON representation of the following data:
 
 | Key    | Possible values           |
-|--------|---------------------------|
+| ------ | ------------------------- |
 | type   | security-reset-to-default |
 | result | done / error              |
 ```
@@ -656,7 +724,7 @@ The security-restart message tells the device to apply a new configuration by re
 The encrypted payload of the response consists of a JSON representation of the following data:
 
 | Key    | Possible values  |
-|--------|------------------|
+| ------ | ---------------- |
 | type   | security-restart |
 | result | done / error     |
 ```
@@ -754,7 +822,8 @@ class ScpDebug {
 ### 8.1 Default credentials
 
 #### 8.1.1 Default device password
-The default device password is 124567890123456.
+Every device password is 32 characters long.
+The default device password is 01234567890123456789012345678901.
 
 #### 8.1.2 Default Wifi Access Point credentials
 SSID: "scp-controller-" + MAC Address
@@ -762,21 +831,34 @@ SSID: "scp-controller-" + MAC Address
 Pre-Shared-Key: default device password
 
 ### 8.2 ESP8266 EEPROM Layout
-|   | 128 | 64 | 32 | 16 | 8 | 4 | 2 | 1 |  
-| - | - | - | - | - | - | - | - | - |  
-| 0 | res. | res. | res. | res. | res. | res. | DevID Set | Pw Set |
-| 8 | PW | PW | PW | PW | PW | PW | PW | PW |
-| 16 | PW | PW | PW | PW | PW | PW | PW | PW |
-| 24 | DevID | DevID | DevID | DevID | DevID | DevID | DevID | DevID |
-| 32 | DevID | DevID | DevID | DevID | DevID | DevID | DevID | DevID | 
-| 40 | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  |
-| 48 | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | 
-| 56 | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  |
-| 64 | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  |
+
+The ESP8266 comes with 512 Bytes of EEPROM storage.
+
+|     | 128   | 64    | 32    | 16    | 8     | 4     | 2         | 1      |
+| --- | ----- | ----- | ----- | ----- | ----- | ----- | --------- | ------ |
+| 0   | res.  | res.  | res.  | res.  | res.  | res.  | DevID Set | Pw Set |
+| 8   | PW    | PW    | PW    | PW    | PW    | PW    | PW        | PW     |
+| 16  | PW    | PW    | PW    | PW    | PW    | PW    | PW        | PW     |
+| 24  | DevID | DevID | DevID | DevID | DevID | DevID | DevID     | DevID  |
+| 32  | DevID | DevID | DevID | DevID | DevID | DevID | DevID     | DevID  |
+| 40  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #      | Pw #   |
+| 48  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #      | Pw #   |
+| 56  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #      | Pw #   |
+| 64  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #      | Pw #   |
 
 ## Project Philosophy
 
 To enhance the security of the project and devices using the protocol the project is licensed under the GPL Version 3.0 or later to prevent third parties from using it while lowering the level of security without disclosure.
+
+## Versions
+
+### 0.0.2
+
+Changed from AES-128 CBC to ChaCha20 Poly1305 because it is natively supported by the ESP8266 SDK and comes with AEAD.
+Therefore changed the default password from 16 characters to 32 characters and reworked the whole concept.
+
+### 0.0.1
+Initial version
 
 ## License
 SPDX-License-Identifier: GPL-3.0-or-later

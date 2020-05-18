@@ -14,22 +14,23 @@ Copyright (C) 2018 Benjamin Schilling
 
 #define DEBUG 1
 
-
 class ScpDebug
 {
 
 public:
-
-    bool enableLog = false;
-
-    enum logClass_t {base = 1, crypto = 2, deviceId = 3, eeprom = 4, messageFactory = 5, password = 6};
+    enum logClass_t
+    {
+        base = 1,
+        crypto = 2,
+        deviceId = 3,
+        eeprom = 4,
+        messageFactory = 5,
+        password = 6
+    };
 
     ScpDebug();
-    ScpDebug(bool enableLog);
 
     void println(logClass_t logClass, String debugString);
-
 };
-
 
 #endif

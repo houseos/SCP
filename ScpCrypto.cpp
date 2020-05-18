@@ -4,71 +4,31 @@ This is the source file for the ScpCrypto class.
 
 SPDX-License-Identifier: GPL-3.0-or-later
 
-Copyright (C) 2018 Benjamin Schilling
+Copyright (C) 2018 - 2020 Benjamin Schilling
 */
 
 #include "ScpCrypto.h"
 
-ScpCrypto::ScpCrypto() {
+ScpCrypto::ScpCrypto()
+{
 }
 
-String ScpCrypto::decrypt(char *enciphered, uint32_t lengthOfText,
-                  uint8_t *key, uint8_t *iv)
+String ScpCrypto::decrypt(char *payload, size_t payloadLength,
+                          uint8_t *key, uint8_t *nonce, uint8_t *mac)
 {
+  bool decryptionSucceeded = ChaCha20Poly1305::decrypt(payload, payloadLength, key, nullptr, sizeof 0, nonce, mac);
 
-  uint8_t deciphered[lengthOfText];
-  memset(deciphered, 0, (lengthOfText + 1) * sizeof(uint8_t));
-  // create aesDecryptor abject
-  AES aesDecryptor(key, iv, AES::AES_MODE_128, AES::CIPHER_DECRYPT);
-
-  // decrypt the message
-  aesDecryptor.process((uint8_t *)enciphered, deciphered, lengthOfText);
-
-  String output = "";
-  
-  uint8_t padlength = deciphered[lengthOfText-1];
-  for (uint32_t i = 0; i < (lengthOfText - padlength); i++ ){
-    output.concat((char)deciphered[i]);
-  }
-  return output;
-}
-
-void ScpCrypto::generateHMAC(byte *message, uint32_t length, uint8_t *key,
-                       byte *authCode)
-{
-  /* Create the HMAC instance with our key */
-  SHA256HMAC hmac(key, KEY_LENGTH);
-
-  /* Update the HMAC with just a plain string (null terminated) */
-  hmac.doUpdate(message, length);
-
-  /* Finish the HMAC calculation and return the authentication code */
-  hmac.doFinal(authCode);
-}
-
-void ScpCrypto::setIV()
-{
-  int seed;
-  for (int i = 0; i < 100; i++)
+  if (decryptionSucceeded)
   {
-    seed += analogRead(SEED_PIN);
+    return String(payload);
   }
-  randomSeed(seed);
-  for (int i = 0; i < BLOCK_SIZE; i++)
+  else
   {
-    iv[i] = random(0, 9);
+    return "";
   }
 }
 
-String ScpCrypto::getIVString(){
-    String ivString = "";
-    for (int i = 0; i < BLOCK_SIZE; i++)
-    {
-      ivString = ivString + String(iv[i]);
-    }
-    return ivString;
-}
-
-uint8_t* ScpCrypto::getIVPlain(){
-    return iv;
+String ScpCrypto::generateHMAC(String payload, uint8_t *key, size_t keyLength)
+{
+  return SHA512::hmacCT(payload.begin(), key, keyLength, HMAC_LENGTH);
 }

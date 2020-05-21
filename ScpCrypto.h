@@ -18,11 +18,9 @@ Copyright (C) 2018 - 2020 Benjamin Schilling
 #include <ESP8266WiFi.h>
 #include <Crypto.h>
 
-// 3rd Party Libraries
-#include <rBase64.h>
-
 // SCP Libraries
 #include "ScpDebug.h"
+#include "ScpDecode.h"
 
 // Defines for ChaCha20 Poly1305
 #define MAC_LENGTH 16
@@ -53,16 +51,16 @@ public:
    * @brief Uses ChaCha20_Poly1305 to decrypt the message and verify
    *        the message authentication code afterwards
    * 
-   * @param payload The encrypted payload
+   * @param base64Payload The base64 encoded encrypted payload
    * @param payloadLength The length of the encrypted payload
-   * @param key The key as a byte array
-   * @param nonce The nonce as a byte array
-   * @param mac The message authentication code as a byte array
+   * @param key The key
+   * @param base64Nonce The base64 encoded nonce
+   * @param base64Mac The base64 encoded message authentication code
    * 
    * @returns String The decrypted message on success, empty string on error
    */
-  String decrypt(char *payload, size_t payloadLength,
-                 uint8_t *key, uint8_t *nonce, uint8_t *mac);
+  String decrypt(String base64Payload, int payloadLength,
+                 String key, String base64Nonce, String base64Mac);
 
   /**
   * @brief Generates a SHA512 HMAC for the given payload
@@ -74,6 +72,14 @@ public:
   * @returns The resulting HMAC as HEX String
   */
   String generateHMAC(String payload, uint8_t *key, size_t keyLength);
+
+  String getNVCN();
+
+  bool checkNVCN(String nvcn);
+
+private:
+  long unsigned int currentNvcn;
+
 };
 
 #endif

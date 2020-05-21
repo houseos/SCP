@@ -22,7 +22,70 @@ void SCP::handleSecureControl()
 {
     scpDebug.println(scpDebug.base, "  SCP.handleSecureControl: handleClient");
 
+    String nonce = server->arg("nonce");
+    Serial.print("nonce: ");
+    Serial.println(nonce);
     String payload = server->arg("payload");
+    Serial.print("payload: ");
+    Serial.println(payload);
+    String payloadLength = server->arg("payloadLength");
+    Serial.print("payloadLength: ");
+    Serial.println(payloadLength);
+    String mac = server->arg("mac");
+    Serial.print("mac: ");
+    Serial.println(mac);
+
+    // Do input validation
+    // TODO
+
+    // decrypt payload
+    String password = scpPassword.readPassword();
+    String decryptedPayload = scpCrypto.decrypt(payload, payloadLength.toInt(), password, nonce, mac);
+    Serial.println(decryptedPayload);
+    if (decryptedPayload == "")
+    {
+        sendMalformedPayload();
+        return;
+    }
+    //disassemble payload
+    String nvcn = decryptedPayload.substring(0, decryptedPayload.indexOf(":"));
+    Serial.println("NVCN: " + nvcn);
+    String remaining = decryptedPayload.substring(decryptedPayload.indexOf(":") + 1);
+    Serial.println("remaining: " + remaining);
+    String receivedDeviceId = remaining.substring(0, remaining.indexOf(":"));
+    Serial.println("receivedDeviceId: " + receivedDeviceId);
+    remaining = remaining.substring(remaining.indexOf(":") + 1);
+    Serial.println("remaining: " + remaining);
+    String receivedMessageType = remaining.substring(0, remaining.indexOf(":"));
+    Serial.println("receivedMessageType: " + receivedMessageType);
+    if (scpCrypto.checkNVCN(nvcn))
+    {
+        Serial.println("NVCN matches");
+        if (receivedDeviceId.equals(this->deviceID))
+        {
+            Serial.println("receivedDeviceId matches");
+            if (receivedMessageType == "security-pw-change")
+            {
+                Serial.println("receivedMessageType matches");
+                remaining = remaining.substring(remaining.indexOf(":") + 1);
+                String newPassword = remaining.substring(0, remaining.indexOf(":"));
+                scpPassword.writePassword(newPassword);
+                String answer = scpMessageFactory.createMessageSecurityPwChange(this->deviceID, String(scpPassword.readCurrentPasswordNumber()), "success");
+                server->send(200, "application/json", answer);
+                return;
+            }
+        }
+        else
+        {
+
+            Serial.println("receivedDeviceId invalid");
+        }
+    }
+    else
+    {
+        Serial.println("NVCN invalid");
+    }
+    sendMalformedPayload();
 }
 
 void SCP::handleDiscoverHello()
@@ -36,7 +99,8 @@ void SCP::handleDiscoverHello()
     // handle discover-hello message
     if (payload.equals("discover-hello"))
     {
-        String answer = messageFactory.createMessageDiscoverHello(deviceID, deviceType);
+        String currentPasswordNumber = String(scpPassword.readCurrentPasswordNumber());
+        String answer = scpMessageFactory.createMessageDiscoverHello(deviceID, deviceType, currentPasswordNumber);
         server->send(200, "application/json", answer);
 
         scpDebug.println(scpDebug.base, "  SCP.handleDiscoverHello:  discover-response send: " + answer);
@@ -51,8 +115,33 @@ void SCP::handleDiscoverHello()
 
 void SCP::handleSecurityFetchNVCN()
 {
+    scpDebug.println(scpDebug.base, "  SCP.handleSecurityFetchNVCN:  Received request");
 
-    sendMalformedPayload();
+    /*String nonce = server->arg("nonce");
+  Serial.print("nonce: ");
+  Serial.println(nonce);
+  String payload = server->arg("payload");
+  Serial.print("payload: ");
+  Serial.println(payload);
+  String payloadLength = server->arg("payloadLength");
+  Serial.print("payloadLength: ");
+  Serial.println(payloadLength);
+  String mac = server->arg("mac");
+  Serial.print("mac: ");
+  Serial.println(mac);
+
+  // Do input validation
+    // TODO
+
+
+  // decrypt payload
+  String password = scpPassword.readPassword();
+  String decryptedPayload = scpCrypto.decrypt(payload, payloadLength.toInt(), password, nonce, mac);
+  Serial.println(decryptedPayload);*/
+    scpDebug.println(scpDebug.base, "  SCP.handleSecurityFetchNVCN:  Handled request");
+
+    String answer = scpMessageFactory.createMessageSecurityFetchNVCN(deviceID, scpCrypto.getNVCN());
+    server->send(200, "application/json", answer);
 }
 
 void SCP::sendMalformedPayload()
@@ -94,20 +183,35 @@ void SCP::handleClient() { server->handleClient(); }
 void SCP::provisioningMode()
 {
     // Get wifi ssid
-    String ssid = "scp-controller-" + WiFi.macAddress();
+    String ssid = this->deviceType + "-" + WiFi.macAddress();
+    ssid.replace(":", "");
     String password = "1234567890123456";
 
-    // open Wifi
+    // Set Wifi persistent to false,
+    // otherwise on every WiFi.begin the
+    // ssid and password will be written to
+    // the same area in the flash which is
+    // destroy the device in the long run
+    // See: https://github.com/esp8266/Arduino/issues/1054
     WiFi.persistent(false);
     WiFi.softAP(ssid, password);
+    scpDebug.print(scpDebug.base, "  SCP.provisioningMode: Open Wifi: ");
+    scpDebug.println(scpDebug.base, ssid);
+    scpDebug.print(scpDebug.base, "  SCP.provisioningMode: Password: ");
+    scpDebug.println(scpDebug.base, password);
 }
 
 void SCP::controlMode()
 {
-    String wifiSSID = eepromController.getWifiSSID();
-    String wifiPassword = eepromController.getWifiPassword();
+    String wifiSSID = scpEepromController.getWifiSSID();
+    String wifiPassword = scpEepromController.getWifiPassword();
 
-    // open Wifi
+    // Set Wifi persistent to false,
+    // otherwise on every WiFi.begin the
+    // ssid and password will be written to
+    // the same area in the flash which is
+    // destroy the device in the long run
+    // See: https://github.com/esp8266/Arduino/issues/1054
     WiFi.persistent(false);
     WiFi.mode(WIFI_STA);
     WiFi.begin(wifiSSID, wifiPassword);
@@ -120,11 +224,11 @@ void SCP::controlMode()
         digitalWrite(D5, !digitalRead(D5));
     }
 
-    scpDebug.println(scpDebug.base, "  SCP.control: Connected to Wifi:");
-    scpDebug.print(scpDebug.base, wifiSSID);
-    scpDebug.println(scpDebug.base, "  SCP.control: IP address:");
+    scpDebug.print(scpDebug.base, "  SCP.controlMode: Connected to Wifi:");
+    scpDebug.println(scpDebug.base, wifiSSID);
+    scpDebug.print(scpDebug.base, "  SCP.controlMode: IP address:");
     String ipAddress = WiFi.localIP().toString();
-    scpDebug.print(scpDebug.base, ipAddress);
+    scpDebug.println(scpDebug.base, ipAddress);
 }
 
 void SCP::init(String deviceType)
@@ -133,28 +237,33 @@ void SCP::init(String deviceType)
     this->deviceType = deviceType;
 
     // If the default password was not set, set it now
-    if (password.isDefaultPasswordSetOnce() == false)
+    if (!scpPassword.isDefaultPasswordSetOnce())
     {
-        scpDebug.println(scpDebug.base, "  SCP.init: password not set, setting default password");
-        password.setDefaultPassword();
+        scpDebug.println(scpDebug.base, "  SCP.init: password not set, initializing default password");
+        scpPassword.setDefaultPassword();
     }
 
     // If the device id is not set, set it now
-    if (!dID.isDeviceIDSet())
+    if (!scpDeviceID.isDeviceIDSet())
     {
         scpDebug.println(scpDebug.base, "  SCP.init: device ID not set, setting device ID");
-        dID.setDeviceID();
+        scpDeviceID.setDeviceID();
     }
 
     // read the device id
-    deviceID = dID.readDeviceID();
+    deviceID = scpDeviceID.readDeviceID();
 
     scpDebug.println(scpDebug.base, "  SCP.init: DeviceID: " + deviceID);
 
     // if the default password is set, and no wifi credentials are set,
     // go to provisioning mode, otherwise go to control mode
-    if (eepromController.isDefaultPasswordSet() && !eepromController.areWifiCredentialsSet())
+    if (scpPassword.readPassword() == scpPassword.DEFAULT_PW && !scpEepromController.areWifiCredentialsSet())
     {
+        scpDebug.println(scpDebug.base, "  SCP.init: Default password set and no Wifi Credentials available, going to provisioning mode.");
+        provisioningMode();
+    } else if (scpPassword.readPassword() != scpPassword.DEFAULT_PW && !scpEepromController.areWifiCredentialsSet() ){
+        scpDebug.println(scpDebug.base, "  SCP.init: New password set but no Wifi Credentials available, going to provisioning mode.");
+        scpPassword.setDefaultPassword();
         provisioningMode();
     }
     else

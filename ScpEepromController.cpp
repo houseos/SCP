@@ -29,12 +29,12 @@ bool ScpEepromController::isDefaultPasswordSet()
 {
    if ((EEPROM.read(FLAGS_ADDRESS) & 0x01) == 0x01)
    {
-      scpDebug.println(scpDebug.eeprom, "      ScpEepromController.isDefaultPasswordSet: Default Password set");
+      scpDebug.println(scpDebug.eeprom, "      ScpEepromController.isDefaultPasswordSet: Default password initialized.");
       return true;
    }
    else
    {
-      scpDebug.println(scpDebug.eeprom, "      ScpEepromController.isDefaultPasswordSet: Default Password not set");
+      scpDebug.println(scpDebug.eeprom, "      ScpEepromController.isDefaultPasswordSet: Default Password not initialized.");
       return false;
    }
 }
@@ -47,6 +47,7 @@ void ScpEepromController::setIsDefaultPasswordSet()
 {
    uint8_t byteOne = EEPROM.read(FLAGS_ADDRESS);
    EEPROM.write(FLAGS_ADDRESS, (byteOne | 0x01));
+   EEPROM.commit();
 }
 
 /**
@@ -76,6 +77,8 @@ void ScpEepromController::setIsDeviceIdSet()
 {
    uint8_t byteOne = EEPROM.read(FLAGS_ADDRESS);
    EEPROM.write(FLAGS_ADDRESS, (byteOne | 0x02));
+   EEPROM.commit();
+
 }
 
 /**
@@ -86,6 +89,7 @@ void ScpEepromController::setAreWifiCredentialsSet()
 {
    uint8_t byteOne = EEPROM.read(FLAGS_ADDRESS);
    EEPROM.write(FLAGS_ADDRESS, (byteOne | 0x04));
+   EEPROM.commit();
 }
 
 /**

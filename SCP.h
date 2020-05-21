@@ -50,11 +50,11 @@ public:
   void registerControlStopFunction(std::function<void()> fun);
 
 private:
-  ScpPassword password;
-  ScpDeviceID dID;
-  ScpCrypto crypto;
-  ScpMessageFactory messageFactory;
-  ScpEepromController eepromController;
+  ScpPassword scpPassword;
+  ScpDeviceID scpDeviceID;
+  ScpCrypto scpCrypto;
+  ScpMessageFactory scpMessageFactory;
+  ScpEepromController scpEepromController;
   ScpDebug scpDebug;
 
   String deviceID = "";

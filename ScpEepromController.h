@@ -138,18 +138,18 @@ public:
   void setWifiPassowrd(String password);
 
 private:
-  const int FLAGS_ADDRESS = 0; // res. | res. | rest | res. | res. | res. | Device ID | PW_SET
+  const int FLAGS_ADDRESS = 0; // res. | res. | rest | res. | res. | Wifi Credentials set | Device ID set | Default PW Initialized
   const int FLAGS_LENGTH = 1;  // Byte 0
   const int PW_ADDRESS = 1;
-  const int PW_LENGTH = 32; // Bytes 1 - 33
-  const int CURRENT_PW_NUMBER_ADDRESS = 34;
-  const int CURRENT_PW_NUMBER_LENGTH = 32; // Bytes 34 - 66
-  const int DEVICE_ID_ADDRESS = 67;
-  const int DEVICE_ID_LENGTH = 16; // Bytes 67 - 83
-  const int WIFI_SSID_ADDRESS = 84;
-  const int WIFI_SSID_LENGTH = 32; // Bytes 84 - 115
-  const int WIFI_PASSWORD_ADDRESS = 116;
-  const int WIFI_PASSWORD_LENGTH = 32; // Bytes 116 - 148
+  const int PW_LENGTH = 32; // Bytes 1 - 32
+  const int CURRENT_PW_NUMBER_ADDRESS = 33;
+  const int CURRENT_PW_NUMBER_LENGTH = 32; // Bytes 33 - 64
+  const int DEVICE_ID_ADDRESS = 65;
+  const int DEVICE_ID_LENGTH = 16; // Bytes 65 - 80
+  const int WIFI_SSID_ADDRESS = 81;
+  const int WIFI_SSID_LENGTH = 32; // Bytes 81 - 112
+  const int WIFI_PASSWORD_ADDRESS = 113;
+  const int WIFI_PASSWORD_LENGTH = 32; // Bytes 113 - 144
 
   ScpDebug scpDebug;
 };

@@ -111,7 +111,7 @@ public:
    * @param hmac 
    * @return String 
    */
-  String createMessageDiscoverHello(String deviceID, String deviceType);
+  String createMessageDiscoverHello(String deviceID, String deviceType, String currentPasswordNumber);
 
 private:
   ScpDebug scpDebug;

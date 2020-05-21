@@ -51,8 +51,23 @@ String ScpMessageFactory::createMessageSecurityFetchNVCN(String deviceID, String
 
 String ScpMessageFactory::createMessageSecurityPwChange(String deviceID, String numberOfPasswordChanges, String status)
 {
-    String message = "{ \"type\" : \"security-pw-change\",  \"deviceId\" :\"" + deviceID + "\" ,  \"currentPasswordNumber\" :\"" + numberOfPasswordChanges + "\" , \"result\" : \"" + status +
-                     "\" }";
+    scpDebug.println(scpDebug.messageFactory, "  ScpMessageFactory.createMessageSecurityPwChange");
+
+    String stringForHMAC = "security-pw-change" + deviceID + numberOfPasswordChanges + status + "\0";
+
+    uint8_t key[KEY_LENGTH];
+    memset(key, 0, KEY_LENGTH * sizeof(uint8_t));
+    String pw = password.readPassword();
+    //Get bytes of password string + 1, otherwise the last character is omitted
+    pw.getBytes(key, KEY_LENGTH + 1);
+    String hmac = crypto.generateHMAC(stringForHMAC, key, KEY_LENGTH);
+
+    String message = "{ \"type\" : \"security-pw-change\",";
+    message += "\"deviceId\" :\"" + deviceID + "\",";
+    message += "\"currentPasswordNumber\" :\"" + numberOfPasswordChanges + "\",";
+    message += "\"result\" : \"" + status + "\",";
+    message += "\"hmac\" : \"" + hmac + "\"";
+    message += "}";
     return message;
 }
 
@@ -68,10 +83,9 @@ String ScpMessageFactory::createMessageSecurityResetToDefault(String status)
     return message;
 }
 
-String ScpMessageFactory::createMessageDiscoverHello(String deviceID, String deviceType)
+String ScpMessageFactory::createMessageDiscoverHello(String deviceID, String deviceType, String currentPasswordNumber)
 {
-    scpDebug.println(scpDebug.messageFactory, "  SCP.handleDiscoverHello -> createMessageDiscoverHello:  Number of password changes: " + String(password.readCurrentPasswordNumber()));
-    String currentPasswordNumber = String(password.readCurrentPasswordNumber());
+    scpDebug.println(scpDebug.messageFactory, "  ScpMessageFactory.createMessageDiscoverHello -> createMessageDiscoverHello:  Number of password changes: " + String(password.readCurrentPasswordNumber()));
 
     String stringForHMAC = "discover-response" + deviceID + deviceType + currentPasswordNumber + "\0";
 

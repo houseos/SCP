@@ -13,14 +13,19 @@ ScpDecode::ScpDecode()
 {
 }
 
-uint8_t *ScpDecode::base64Decode(String base64String)
+uint8_t *ScpDecode::base64DecodeToInt(String base64String)
 {
     rbase64.decode(base64String);
     return reinterpret_cast<uint8_t *>(rbase64.result());
 }
+
+char* ScpDecode::base64DecodeToChar(String base64String){
+    rbase64.decode(base64String);
+    return rbase64.result();
+}
+
 String ScpDecode::base64Encode(uint8_t *payload)
 {
     rbase64.encode(reinterpret_cast<const char *>(payload));
-    // The payload base64-decoded is the encrypted message
     return String(rbase64.result());
 }

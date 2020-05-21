@@ -19,3 +19,10 @@ void ScpDebug::println(logClass_t logClass, String debugString)
     Serial.println(debugString);
 #endif
 }
+
+void ScpDebug::print(logClass_t logClass, String debugString)
+{
+#ifdef DEBUG
+    Serial.print(debugString);
+#endif
+}

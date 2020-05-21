@@ -31,6 +31,7 @@ public:
     ScpDebug();
 
     void println(logClass_t logClass, String debugString);
+    void print(logClass_t logClass, String debugString);
 };
 
 #endif

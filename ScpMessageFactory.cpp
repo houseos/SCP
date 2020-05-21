@@ -68,7 +68,6 @@ String ScpMessageFactory::createMessageSecurityResetToDefault(String status)
     return message;
 }
 
-//Discovery Messages
 String ScpMessageFactory::createMessageDiscoverHello(String deviceID, String deviceType)
 {
     scpDebug.println(scpDebug.messageFactory, "  SCP.handleDiscoverHello -> createMessageDiscoverHello:  Number of password changes: " + String(password.readCurrentPasswordNumber()));
@@ -76,7 +75,12 @@ String ScpMessageFactory::createMessageDiscoverHello(String deviceID, String dev
 
     String stringForHMAC = "discover-response" + deviceID + deviceType + currentPasswordNumber + "\0";
 
-    String hmac = hmacForString(stringForHMAC);
+    uint8_t key[KEY_LENGTH];
+    memset(key, 0, KEY_LENGTH * sizeof(uint8_t));
+    String pw = password.readPassword();
+    //Get bytes of password string + 1, otherwise the last character is omitted
+    pw.getBytes(key, KEY_LENGTH + 1);
+    String hmac = crypto.generateHMAC(stringForHMAC, key, KEY_LENGTH);
 
     String message = "{ \"type\" : \"discover-response\",";
     message += "\"deviceId\" : \"" + deviceID + "\",";
@@ -86,39 +90,4 @@ String ScpMessageFactory::createMessageDiscoverHello(String deviceID, String dev
     message += hmac;
     message += "\" }";
     return message;
-}
-
-String ScpMessageFactory::hmacForString(String string)
-{
-
-    return "";
-    /*
-    scpDebug.println(scpDebug.messageFactory, "  SCP.handleDiscoverHello -> createMessageDiscoverHello:  ToHmac: " + string);
-
-    uint8_t key[BLOCK_SIZE];
-    memset(key, 0, BLOCK_SIZE * sizeof(uint8_t));
-    String pw = password.readPassword();
-    for (int i = 0; i < BLOCK_SIZE; i++)
-    {
-      char c = pw.charAt(i);
-      key[i] = c;
-    }
-    byte hmacBytes[SHA256HMAC_SIZE];
-
-    byte buffer[string.length()];
-    for (int i = 0; i < string.length(); i++)
-    {
-      buffer[i] = string.charAt(i);
-      scpDebug.println(scpDebug.messageFactory, "  SCP.handleDiscoverHello -> createMessageDiscoverHello:  Buffer: " +  String(buffer[i]));
-    }
-    crypto.generateHMAC(buffer, string.length(), key, hmacBytes);
-
-    for(int i = 0; i< SHA256HMAC_SIZE; i++){
-        scpDebug.println(scpDebug.messageFactory, "  SCP.handleDiscoverHello -> createMessageDiscoverHello:  HMAC Byte: " + String(i) + ": " + String(hmacBytes[i]));
-    }
-
-    rbase64.encode(hmacBytes, SHA256HMAC_SIZE);
-
-    return rbase64.result();
-    */
 }

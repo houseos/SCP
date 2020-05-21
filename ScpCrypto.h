@@ -30,7 +30,7 @@ Copyright (C) 2018 - 2020 Benjamin Schilling
 #define NONCE_LENGTH 12
 
 // Defines for the HMAC
-#define HMAC_LENGTH 16
+#define HMAC_LENGTH 64
 
 #define SUCCESS 0
 #define ERROR 1

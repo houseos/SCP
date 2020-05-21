@@ -39,6 +39,12 @@
       - [8.1.1 Default device password](#811-default-device-password)
       - [8.1.2 Default Wifi Access Point credentials](#812-default-wifi-access-point-credentials)
     - [8.2 ESP8266 EEPROM Layout](#82-esp8266-eeprom-layout)
+      - [8.3 Flags](#83-flags)
+        - [8.4 Device Password](#84-device-password)
+        - [8.5 Current Password Number](#85-current-password-number)
+        - [8.6 Device ID](#86-device-id)
+        - [8.7 WIFI SSID](#87-wifi-ssid)
+        - [8.8 WIFI Password](#88-wifi-password)
   - [Project Philosophy](#project-philosophy)
   - [Versions](#versions)
     - [0.0.2](#002)
@@ -434,6 +440,8 @@ Ressource: http://device-ip/secure-control/discover-hello?payload=discover-hello
 The discover-hello message is sent to all IP addresses of the home network subnet to determine which IP addresses beloang to a secure-controller. 
 It is the only message being sent without encryption. 
 If the device is a secure-controller it responds with a HTTP 200 OK message containing a JSON representation of the following information.
+
+The configured password of the device is used as the key in the HMAC calculation.
 
 The HMAC is calculated as follows:
 ```
@@ -834,17 +842,33 @@ Pre-Shared-Key: default device password
 
 The ESP8266 comes with 512 Bytes of EEPROM storage.
 
-|     | 128   | 64    | 32    | 16    | 8     | 4     | 2         | 1      |
-| --- | ----- | ----- | ----- | ----- | ----- | ----- | --------- | ------ |
-| 0   | res.  | res.  | res.  | res.  | res.  | res.  | DevID Set | Pw Set |
-| 8   | PW    | PW    | PW    | PW    | PW    | PW    | PW        | PW     |
-| 16  | PW    | PW    | PW    | PW    | PW    | PW    | PW        | PW     |
-| 24  | DevID | DevID | DevID | DevID | DevID | DevID | DevID     | DevID  |
-| 32  | DevID | DevID | DevID | DevID | DevID | DevID | DevID     | DevID  |
-| 40  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #      | Pw #   |
-| 48  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #      | Pw #   |
-| 56  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #      | Pw #   |
-| 64  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #  | Pw #      | Pw #   |
+#### 8.3 Flags
+
+Bytes 0
+
+|     | 128  | 64   | 32   | 16   | 8    | 4                    | 2         | 1              |
+| --- | ---- | ---- | ---- | ---- | ---- | -------------------- | --------- | -------------- |
+| 0   | res. | res. | res. | res. | res. | Wifi Credentials Set | DevID Set | Default Pw Set |
+
+##### 8.4 Device Password
+
+Bytes 1 - 33
+
+##### 8.5 Current Password Number
+
+Bytes 34 - 66
+
+##### 8.6 Device ID
+
+Bytes 67 - 83
+
+##### 8.7 WIFI SSID
+
+Bytes 84 - 115
+
+##### 8.8 WIFI Password
+
+Bytes 116 - 148
 
 ## Project Philosophy
 

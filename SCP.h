@@ -10,12 +10,15 @@ Copyright (C) 2018 Benjamin Schilling
 #ifndef SCP_h
 #define SCP_h
 
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 
 #include "ScpDeviceID.h"
 #include "ScpPassword.h"
 #include "ScpCrypto.h"
 #include "ScpMessageFactory.h"
+#include "ScpEepromController.h"
 
 #include "ScpDebug.h"
 
@@ -32,7 +35,7 @@ public:
    * @brief 
    * 
    */
-  void init(String deviceType, bool enableLog = false);
+  void init(String deviceType);
 
   /**
    * @brief 
@@ -51,6 +54,7 @@ private:
   ScpDeviceID dID;
   ScpCrypto crypto;
   ScpMessageFactory messageFactory;
+  ScpEepromController eepromController;
   ScpDebug scpDebug;
 
   String deviceID = "";
@@ -79,6 +83,12 @@ private:
    * @brief 
    * 
    */
+  void handleSecurityFetchNVCN();
+
+  /**
+   * @brief 
+   * 
+   */
   void handleNotFound();
   // HTTP Error Methods
 
@@ -87,6 +97,20 @@ private:
    * 
    */
   void sendMalformedPayload();
+
+  // State Handling
+
+  /**
+   * @brief 
+   * 
+   */
+  void provisioningMode();
+
+  /**
+   * @brief 
+   * 
+   */
+  void controlMode();
 };
 
 #endif

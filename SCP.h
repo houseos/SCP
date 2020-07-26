@@ -12,6 +12,7 @@ Copyright (C) 2018 Benjamin Schilling
 
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
+#include <ESP8266WiFiMulti.h>
 #include <ESP8266WebServer.h>
 
 #include "ScpDeviceID.h"
@@ -60,6 +61,7 @@ private:
   String deviceID = "";
   String deviceType = "";
   ESP8266WebServer *server;
+  ESP8266WiFiMulti wifiMulti;
   String DEFAULT_PW = "1234567890123456";
 
   std::function<void()> controlUpFunction;

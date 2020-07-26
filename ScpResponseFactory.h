@@ -121,22 +121,20 @@ public:
    */
   String createResponseDiscoverHello(String deviceID, String deviceType, String currentPasswordNumber);
 
-// ====== Encrypted Responses ======
+// ====== HMAC SHA512 Responses ======
   /**
-   * @brief Create a encrpyted response JSON string
+   * @brief Create a response JSON string protected by an HMAC 
    * 
-   * @param deviceID 
-   * @param deviceType 
-   * @param defaultPWresult 
-   * @param hmac 
+   * @param plainTextResponse
    * @return String 
    */
-  String createEncryptedResponse(String plainTextResponse);
+  String createHmacResponse(String plainTextResponse);
 
 private:
   ScpDebug scpDebug;
   ScpPassword scpPassword;
   ScpCrypto scpCrypto;
+  rBase64generic<250> bigBase64;
 };
 
 #endif

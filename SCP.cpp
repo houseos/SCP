@@ -59,17 +59,14 @@ void SCP::handleSecureControl()
     String salt = decryptedPayload.substring(0, decryptedPayload.indexOf(":"));
     Serial.println("salt: " + salt);
     String remaining = decryptedPayload.substring(decryptedPayload.indexOf(":") + 1);
-    Serial.println("remaining after salt: " + remaining);
     // message type
     String messageType = remaining.substring(0, remaining.indexOf(":"));
     Serial.println("messageType: " + messageType);
     remaining = remaining.substring(remaining.indexOf(":") + 1);
-    Serial.println("remaining after messageType: " + remaining);
     //device ID
     String deviceId = remaining.substring(0, remaining.indexOf(":"));
     Serial.println("deviceId: " + deviceId);
     remaining = remaining.substring(remaining.indexOf(":") + 1);
-    Serial.println("remaining aftet deviceId: " + remaining);
 
     // if device ID is invalid return
     if (!isDeviceIdValid(deviceId))
@@ -104,18 +101,54 @@ void SCP::handleSecureControl()
             String newPassword = remaining.substring(0, remaining.indexOf(":"));
             scpPassword.writePassword(newPassword);
             String answer = scpResponseFactory.createResponseSecurityPwChange(this->deviceID, String(scpPassword.readCurrentPasswordNumber()), "done");
-            answer = scpResponseFactory.createEncryptedResponse(answer);
-            server->send(200, "application/json", answer);
+            String hmacAnswer = scpResponseFactory.createHmacResponse(answer);
+            scpDebug.println(scpDebug.base, "  SCP.handleSecureControl:  security-pw-change response: " + hmacAnswer);
+            server->send(200, "application/json", hmacAnswer);
             return;
         }
         else if (messageType == "security-wifi-config")
         {
+            Serial.println("received security-wifi-config");
+            String ssid = remaining.substring(0, remaining.indexOf(":"));
+            remaining = remaining.substring(remaining.indexOf(":") + 1);
+            String preSharedKey = remaining.substring(0, remaining.indexOf(":"));
+
+            scpDebug.println(scpDebug.base, "  SCP.handleSecureControl:  security-wifi-config: ssid: " + ssid);
+            scpDebug.println(scpDebug.base, "  SCP.handleSecureControl:  security-wifi-config: preSharedKey: " + preSharedKey);
+
+            //try to connect to wifi
+            //wifiMulti.addAP(ssid.c_str(), preSharedKey.c_str());
+            wifiMulti.addAP(ssid.c_str(), preSharedKey.c_str());
+            uint8_t tries = 1;
+            while (wifiMulti.run() != WL_CONNECTED && tries <= 5) {
+                Serial.print("Try to connect to Wifi, try: ");
+                Serial.print(tries);
+                Serial.println("/5");
+                tries++;
+                delay(2000);
+            }
+            String answer = "";
+            if(wifiMulti.run() == WL_CONNECTED){
+                //if successful store credentials  
+                scpEepromController.setWifiSSID(ssid);
+                scpEepromController.setWifiPassword(preSharedKey);
+                scpEepromController.setAreWifiCredentialsSet();
+                answer = scpResponseFactory.createResponseSecurityWifiConfig(this->deviceID, "success");
+            } else {
+                //send failed response
+                answer = scpResponseFactory.createResponseSecurityWifiConfig(this->deviceID, "error");
+            }
+            String hmacAnswer = scpResponseFactory.createHmacResponse(answer);
+            scpDebug.println(scpDebug.base, "  SCP.handleSecureControl:  security-wifi-config response: " + hmacAnswer);
+            server->send(200, "application/json", hmacAnswer);
+            return;
         }
         else if (messageType == "security-reset-to-default")
         {
         }
         else if (messageType == "security-restart")
         {
+            ESP.restart();
         }
         else
         {
@@ -197,7 +230,7 @@ void SCP::provisioningMode()
     // Set Wifi persistent to false,
     // otherwise on every WiFi.begin the
     // ssid and password will be written to
-    // the same area in the flash which is
+    // the same area in the flash which will
     // destroy the device in the long run
     // See: https://github.com/esp8266/Arduino/issues/1054
     WiFi.persistent(false);
@@ -216,7 +249,7 @@ void SCP::controlMode()
     // Set Wifi persistent to false,
     // otherwise on every WiFi.begin the
     // ssid and password will be written to
-    // the same area in the flash which is
+    // the same area in the flash which will
     // destroy the device in the long run
     // See: https://github.com/esp8266/Arduino/issues/1054
     WiFi.persistent(false);
@@ -224,10 +257,12 @@ void SCP::controlMode()
     WiFi.begin(wifiSSID, wifiPassword);
 
     // Wait until connection is established
+    scpDebug.print(scpDebug.base, "  SCP.controlMode: Connecting to Wifi:");
+    scpDebug.println(scpDebug.base, wifiSSID);
     while (WiFi.status() != WL_CONNECTED)
     {
         delay(500);
-        Serial.print(".");
+        scpDebug.println(scpDebug.base, "  SCP.controlMode: Connecting...");
         digitalWrite(D5, !digitalRead(D5));
     }
 

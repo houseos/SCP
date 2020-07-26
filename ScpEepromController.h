@@ -135,7 +135,7 @@ public:
    * 
    * @param password 
    */
-  void setWifiPassowrd(String password);
+  void setWifiPassword(String password);
 
 private:
   const int FLAGS_ADDRESS = 0; // res. | res. | rest | res. | res. | Wifi Credentials set | Device ID set | Default PW Initialized

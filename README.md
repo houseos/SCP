@@ -567,7 +567,7 @@ The response payload is a JSON representation of the following data:
 | -------- | ---------------------------- |
 | type     | security-wifi-config         |
 | deviceId | device ID                    |
-| result   | successfull / failed / error |
+| result   | success / failed / error |
 
 Example:
 ```json
@@ -575,7 +575,7 @@ Example:
 
     "type" : "security-wifi-config",
     "deviceId" : "<device ID>",
-    "result" : "<successfull / failed / error>"
+    "result" : "<success / failed / error>"
 }
 ``` 
 

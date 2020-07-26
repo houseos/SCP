@@ -268,7 +268,7 @@ String ScpEepromController::getWifiPassword()
    * 
    * @param password 
    */
-void ScpEepromController::setWifiPassowrd(String password)
+void ScpEepromController::setWifiPassword(String password)
 {
    for (int i = 0; i < WIFI_PASSWORD_LENGTH; i++)
    {

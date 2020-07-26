@@ -36,54 +36,92 @@ void SCP::handleSecureControl()
     Serial.println(mac);
 
     // Do input validation
-    // TODO
+    // check length of nonce
+    // check for only valid base64 characters
+
+    // whats the biggest payload? most propably wifi credentials (32 ssid, 32 pw)
+
+    // check length of mac
+    // check for only valid base64 characters
 
     // decrypt payload
     String password = scpPassword.readPassword();
-    String decryptedPayload = scpCrypto.decrypt(payload, payloadLength.toInt(), password, nonce, mac);
+    String decryptedPayload = scpCrypto.decodeAndDecrypt(payload, payloadLength.toInt(), password, nonce, mac);
     Serial.println(decryptedPayload);
     if (decryptedPayload == "")
     {
         sendMalformedPayload();
         return;
     }
-    //disassemble payload
-    String nvcn = decryptedPayload.substring(0, decryptedPayload.indexOf(":"));
-    Serial.println("NVCN: " + nvcn);
-    String remaining = decryptedPayload.substring(decryptedPayload.indexOf(":") + 1);
-    Serial.println("remaining: " + remaining);
-    String receivedDeviceId = remaining.substring(0, remaining.indexOf(":"));
-    Serial.println("receivedDeviceId: " + receivedDeviceId);
-    remaining = remaining.substring(remaining.indexOf(":") + 1);
-    Serial.println("remaining: " + remaining);
-    String receivedMessageType = remaining.substring(0, remaining.indexOf(":"));
-    Serial.println("receivedMessageType: " + receivedMessageType);
-    if (scpCrypto.checkNVCN(nvcn))
-    {
-        Serial.println("NVCN matches");
-        if (receivedDeviceId.equals(this->deviceID))
-        {
-            Serial.println("receivedDeviceId matches");
-            if (receivedMessageType == "security-pw-change")
-            {
-                Serial.println("receivedMessageType matches");
-                remaining = remaining.substring(remaining.indexOf(":") + 1);
-                String newPassword = remaining.substring(0, remaining.indexOf(":"));
-                scpPassword.writePassword(newPassword);
-                String answer = scpMessageFactory.createMessageSecurityPwChange(this->deviceID, String(scpPassword.readCurrentPasswordNumber()), "success");
-                server->send(200, "application/json", answer);
-                return;
-            }
-        }
-        else
-        {
+    // ====== disassemble payload ======
 
-            Serial.println("receivedDeviceId invalid");
-        }
+    // salt
+    String salt = decryptedPayload.substring(0, decryptedPayload.indexOf(":"));
+    Serial.println("salt: " + salt);
+    String remaining = decryptedPayload.substring(decryptedPayload.indexOf(":") + 1);
+    Serial.println("remaining after salt: " + remaining);
+    // message type
+    String messageType = remaining.substring(0, remaining.indexOf(":"));
+    Serial.println("messageType: " + messageType);
+    remaining = remaining.substring(remaining.indexOf(":") + 1);
+    Serial.println("remaining after messageType: " + remaining);
+    //device ID
+    String deviceId = remaining.substring(0, remaining.indexOf(":"));
+    Serial.println("deviceId: " + deviceId);
+    remaining = remaining.substring(remaining.indexOf(":") + 1);
+    Serial.println("remaining aftet deviceId: " + remaining);
+
+    // if device ID is invalid return
+    if (!isDeviceIdValid(deviceId))
+    {
+        sendMalformedPayload();
+        return;
+    }
+    // depending on message type
+    if (messageType == "security-fetch-nvcn")
+    {
+        scpDebug.println(scpDebug.base, "  SCP.handleSecurityFetchNVCN:  Handled request");
+        String answer = scpResponseFactory.createResponseSecurityFetchNVCN(deviceID, scpCrypto.getNVCN());
+        server->send(200, "application/json", answer);
+        return;
     }
     else
     {
-        Serial.println("NVCN invalid");
+        // Get nvcn
+        String nvcn = remaining.substring(0, remaining.indexOf(":"));
+        remaining = remaining.substring(remaining.indexOf(":") + 1);
+        Serial.println("NVCN: " + nvcn);
+        //check NVCN
+        if (!isNVCNValid(nvcn))
+        {
+            sendMalformedPayload();
+            return;
+        }
+        if (messageType == "security-pw-change")
+        {
+            Serial.println("received security-pw-change");
+            remaining = remaining.substring(remaining.indexOf(":") + 1);
+            String newPassword = remaining.substring(0, remaining.indexOf(":"));
+            scpPassword.writePassword(newPassword);
+            String answer = scpResponseFactory.createResponseSecurityPwChange(this->deviceID, String(scpPassword.readCurrentPasswordNumber()), "done");
+            answer = scpResponseFactory.createEncryptedResponse(answer);
+            server->send(200, "application/json", answer);
+            return;
+        }
+        else if (messageType == "security-wifi-config")
+        {
+        }
+        else if (messageType == "security-reset-to-default")
+        {
+        }
+        else if (messageType == "security-restart")
+        {
+        }
+        else
+        {
+            sendMalformedPayload();
+            return;
+        }
     }
     sendMalformedPayload();
 }
@@ -100,7 +138,7 @@ void SCP::handleDiscoverHello()
     if (payload.equals("discover-hello"))
     {
         String currentPasswordNumber = String(scpPassword.readCurrentPasswordNumber());
-        String answer = scpMessageFactory.createMessageDiscoverHello(deviceID, deviceType, currentPasswordNumber);
+        String answer = scpResponseFactory.createResponseDiscoverHello(deviceID, deviceType, currentPasswordNumber);
         server->send(200, "application/json", answer);
 
         scpDebug.println(scpDebug.base, "  SCP.handleDiscoverHello:  discover-response send: " + answer);
@@ -111,37 +149,6 @@ void SCP::handleDiscoverHello()
     }
 
     scpDebug.println(scpDebug.base, "  SCP.handleDiscoverHello:  Message End: DiscoverHello");
-}
-
-void SCP::handleSecurityFetchNVCN()
-{
-    scpDebug.println(scpDebug.base, "  SCP.handleSecurityFetchNVCN:  Received request");
-
-    /*String nonce = server->arg("nonce");
-  Serial.print("nonce: ");
-  Serial.println(nonce);
-  String payload = server->arg("payload");
-  Serial.print("payload: ");
-  Serial.println(payload);
-  String payloadLength = server->arg("payloadLength");
-  Serial.print("payloadLength: ");
-  Serial.println(payloadLength);
-  String mac = server->arg("mac");
-  Serial.print("mac: ");
-  Serial.println(mac);
-
-  // Do input validation
-    // TODO
-
-
-  // decrypt payload
-  String password = scpPassword.readPassword();
-  String decryptedPayload = scpCrypto.decrypt(payload, payloadLength.toInt(), password, nonce, mac);
-  Serial.println(decryptedPayload);*/
-    scpDebug.println(scpDebug.base, "  SCP.handleSecurityFetchNVCN:  Handled request");
-
-    String answer = scpMessageFactory.createMessageSecurityFetchNVCN(deviceID, scpCrypto.getNVCN());
-    server->send(200, "application/json", answer);
 }
 
 void SCP::sendMalformedPayload()
@@ -255,13 +262,15 @@ void SCP::init(String deviceType)
 
     scpDebug.println(scpDebug.base, "  SCP.init: DeviceID: " + deviceID);
 
-    // if the default password is set, and no wifi credentials are set,
+    // if the default password is set or no wifi credentials are set,
     // go to provisioning mode, otherwise go to control mode
     if (scpPassword.readPassword() == scpPassword.DEFAULT_PW && !scpEepromController.areWifiCredentialsSet())
     {
         scpDebug.println(scpDebug.base, "  SCP.init: Default password set and no Wifi Credentials available, going to provisioning mode.");
         provisioningMode();
-    } else if (scpPassword.readPassword() != scpPassword.DEFAULT_PW && !scpEepromController.areWifiCredentialsSet() ){
+    }
+    else if (scpPassword.readPassword() != scpPassword.DEFAULT_PW && !scpEepromController.areWifiCredentialsSet())
+    {
         scpDebug.println(scpDebug.base, "  SCP.init: New password set but no Wifi Credentials available, going to provisioning mode.");
         scpPassword.setDefaultPassword();
         provisioningMode();
@@ -274,8 +283,6 @@ void SCP::init(String deviceType)
     server->on("/secure-control", std::bind(&SCP::handleSecureControl, this));
     server->on("/secure-control/discover-hello",
                std::bind(&SCP::handleDiscoverHello, this));
-    server->on("/secure-control/security-fetch-nvcn",
-               std::bind(&SCP::handleSecurityFetchNVCN, this));
     server->onNotFound(std::bind(&SCP::handleNotFound, this));
     server->begin();
 
@@ -297,4 +304,28 @@ void SCP::registerControlDownFunction(std::function<void()> fun)
 void SCP::registerControlStopFunction(std::function<void()> fun)
 {
     controlStopFunction = fun;
+}
+
+bool SCP::isDeviceIdValid(String devId)
+{
+    if (devId.equals(this->deviceID))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool SCP::isNVCNValid(String nvcn)
+{
+    if (scpCrypto.checkNVCN(nvcn))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }

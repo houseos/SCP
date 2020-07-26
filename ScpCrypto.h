@@ -59,8 +59,22 @@ public:
    * 
    * @returns String The decrypted message on success, empty string on error
    */
-  String decrypt(String base64Payload, int payloadLength,
-                 String key, String base64Nonce, String base64Mac);
+  String decodeAndDecrypt(String base64Payload, int payloadLength,
+                          String key, String base64Nonce, String base64Mac);
+
+  /**
+   * @brief Uses ChaCha20_Poly1305 to encrypt the message and generate
+   *        the message authentication code
+   * 
+   * @param payload The plaintext payload
+   * @param key The key
+   * @param base64Nonce The base64 encoded nonce after the encryption
+   * @param base64Mac The base64 encoded message authentication code after the encryption
+   * 
+   * @returns String The encrypted and encoded message on success, empty string on error
+   */
+  String encryptAndEncode(String payload, int* payloadLength,
+                        String key, String *base64Nonce, String *base64Mac);
 
   /**
   * @brief Generates a SHA512 HMAC for the given payload
@@ -79,7 +93,6 @@ public:
 
 private:
   long unsigned int currentNvcn;
-
 };
 
 #endif

@@ -17,7 +17,7 @@ Copyright (C) 2018 Benjamin Schilling
 #include "ScpDeviceID.h"
 #include "ScpPassword.h"
 #include "ScpCrypto.h"
-#include "ScpMessageFactory.h"
+#include "ScpResponseFactory.h"
 #include "ScpEepromController.h"
 
 #include "ScpDebug.h"
@@ -53,7 +53,7 @@ private:
   ScpPassword scpPassword;
   ScpDeviceID scpDeviceID;
   ScpCrypto scpCrypto;
-  ScpMessageFactory scpMessageFactory;
+  ScpResponseFactory scpResponseFactory;
   ScpEepromController scpEepromController;
   ScpDebug scpDebug;
 
@@ -65,6 +65,11 @@ private:
   std::function<void()> controlUpFunction;
   std::function<void()> controlDownFunction;
   std::function<void()> controlStopFunction;
+
+  // Helpers
+  bool isDeviceIdValid(String devId);
+
+  bool isNVCNValid(String nvcn);
 
   // HTTP Endpoints
   /**

@@ -146,11 +146,12 @@ void SCP::handleSecureControl()
         }
         else if (messageType == "security-reset-to-default")
         {
-            scpEepromController.resetToDefault();
             String answer = scpResponseFactory.createResponseSecurityResetToDefault(this->deviceID, "success");
             String hmacAnswer = scpResponseFactory.createHmacResponse(answer);
             scpDebug.println(scpDebug.base, "  SCP.handleSecureControl:  security-reset-to-default response: " + hmacAnswer);
             server->send(200, "application/json", hmacAnswer);
+            delay(1000);
+            scpEepromController.resetToDefault();
             ESP.restart();
             return;
         }
@@ -168,7 +169,7 @@ void SCP::handleSecureControl()
         {
             Serial.println("received control");
             String action = remaining.substring(0, remaining.indexOf(":"));
-            controlUpFunction();
+            controlFunction(action);
 
             String answer = scpResponseFactory.createResponseControl(this->deviceID, action, "success");
             String hmacAnswer = scpResponseFactory.createHmacResponse(answer);
@@ -352,19 +353,9 @@ void SCP::init(String deviceType)
     scpDebug.println(scpDebug.base, "  SCP.init: SCP initialized");
 }
 
-void SCP::registerControlUpFunction(std::function<void()> fun)
+void SCP::registerControlFunction(std::function<void(String)> fun)
 {
-    controlUpFunction = fun;
-}
-
-void SCP::registerControlDownFunction(std::function<void()> fun)
-{
-    controlDownFunction = fun;
-}
-
-void SCP::registerControlStopFunction(std::function<void()> fun)
-{
-    controlStopFunction = fun;
+    controlFunction = fun;
 }
 
 bool SCP::isDeviceIdValid(String devId)

@@ -44,11 +44,7 @@ public:
    */
   void handleClient();
 
-  void registerControlUpFunction(std::function<void()> fun);
-
-  void registerControlDownFunction(std::function<void()> fun);
-
-  void registerControlStopFunction(std::function<void()> fun);
+  void registerControlFunction(std::function<void(String)> fun);
 
 private:
   ScpPassword scpPassword;
@@ -64,9 +60,7 @@ private:
   ESP8266WiFiMulti wifiMulti;
   String DEFAULT_PW = "1234567890123456";
 
-  std::function<void()> controlUpFunction;
-  std::function<void()> controlDownFunction;
-  std::function<void()> controlStopFunction;
+  std::function<void(String)> controlFunction;
 
   // Helpers
   bool isDeviceIdValid(String devId);

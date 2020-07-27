@@ -639,11 +639,7 @@ The deviceID provided in the payload must match the configured device ID.
 The NVCN provided in the payload must match (current_controller_NVCN - 1).
 
 The encoded_data payload is created according to [REST message types and encoding](#6-rest-message-types) using:
-message_type=control-up
-
-The encrypted payload of the response consists of a JSON representation of the following data:
-
-`plain text = <salt> + ":" + "security-restart" + ":" + <device ID> + ":" + <NVCN>`
+message_type=control
 
 The response payload is a JSON representation of the following data:
 
@@ -652,19 +648,19 @@ The response payload is a JSON representation of the following data:
 | type     | control          |
 | deviceId | device ID        |
 | action   | defined by user  |
-| status   | success or error |
+| result   | success or error |
 Example:
 ```json
 {
     "type" : "control",
     "deviceId" : "<device ID>",
     "action" : "<defines by user",
-    "status" : "success or error>",
+    "result" : "success or error>",
 }
 ``` 
-The status values have the following meaning:
+The result values have the following meaning:
 
-| status    | description                          |
+| result    | description                          |
 | --------- | ------------------------------------ |
 | "success" | the action was executed successfully |
 | "error"   | some error occured                   |

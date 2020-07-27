@@ -276,3 +276,17 @@ void ScpEepromController::setWifiPassword(String password)
    }
    EEPROM.commit();
 }
+
+/**
+   * @brief 
+   * 
+   * @param password 
+   */
+void ScpEepromController::resetToDefault()
+{
+   for (int i = 0; i < 511; i++)
+   {
+      EEPROM.write(i, 0);
+   }
+   EEPROM.commit();
+}

@@ -129,6 +129,7 @@ void SCP::handleSecureControl()
             }
             String answer = "";
             if(wifiMulti.run() == WL_CONNECTED){
+                WiFi.disconnect();
                 //if successful store credentials  
                 scpEepromController.setWifiSSID(ssid);
                 scpEepromController.setWifiPassword(preSharedKey);
@@ -145,10 +146,35 @@ void SCP::handleSecureControl()
         }
         else if (messageType == "security-reset-to-default")
         {
+            scpEepromController.resetToDefault();
+            String answer = scpResponseFactory.createResponseSecurityResetToDefault(this->deviceID, "success");
+            String hmacAnswer = scpResponseFactory.createHmacResponse(answer);
+            scpDebug.println(scpDebug.base, "  SCP.handleSecureControl:  security-reset-to-default response: " + hmacAnswer);
+            server->send(200, "application/json", hmacAnswer);
+            ESP.restart();
+            return;
         }
         else if (messageType == "security-restart")
         {
+            String answer = scpResponseFactory.createResponseSecurityRestart(this->deviceID, "success");
+            String hmacAnswer = scpResponseFactory.createHmacResponse(answer);
+            scpDebug.println(scpDebug.base, "  SCP.handleSecureControl:  security-restart response: " + hmacAnswer);
+            server->send(200, "application/json", hmacAnswer);
+            delay(1000);
             ESP.restart();
+            return;
+        }
+        else if (messageType == "control")
+        {
+            Serial.println("received control");
+            String action = remaining.substring(0, remaining.indexOf(":"));
+            controlUpFunction();
+
+            String answer = scpResponseFactory.createResponseControl(this->deviceID, action, "success");
+            String hmacAnswer = scpResponseFactory.createHmacResponse(answer);
+            scpDebug.println(scpDebug.base, "  SCP.handleSecureControl:  control response: " + hmacAnswer);
+            server->send(200, "application/json", hmacAnswer);
+            return;
         }
         else
         {

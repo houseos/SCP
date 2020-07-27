@@ -31,31 +31,13 @@ public:
 // ====== Control Responses ======
 
   /**
-   * @brief Create a Response Control Up string
+   * @brief Create a Response Control string
    * 
    * @param deviceID 
-   * @param status 
+   * @param result 
    * @return String 
    */
-  String createResponseControlUp(String deviceID, String status);
-
-  /**
-   * @brief Create a Response Control Down string
-   * 
-   * @param deviceID 
-   * @param status 
-   * @return String 
-   */
-  String createResponseControlDown(String deviceID, String status);
-
-  /**
-   * @brief Create a Response Control Stop string
-   * 
-   * @param deviceID 
-   * @param status 
-   * @return String 
-   */
-  String createResponseControlStop(String deviceID, String status);
+  String createResponseControl(String deviceID, String action, String result);
 
   /**
    * @brief Create a Response Control Status string
@@ -80,10 +62,10 @@ public:
   /**
    * @brief Create a Response Security Pw Change string
    * 
-   * @param status 
+   * @param result 
    * @return String 
    */
-  String createResponseSecurityPwChange(String deviceID, String numberOfPasswordChanges, String status);
+  String createResponseSecurityPwChange(String deviceID, String numberOfPasswordChanges, String result);
 
   /**
    * @brief Create a Response Security Wifi Config string
@@ -95,7 +77,7 @@ public:
   /**
    * @brief Create a Response Security Reset To Default string
    * 
-   * @param status 
+   * @param result 
    * @return String 
    */
   String createResponseSecurityResetToDefault(String deviceID, String result);
@@ -103,7 +85,7 @@ public:
   /**
    * @brief Create a Response Security Restart string
    * 
-   * @param status 
+   * @param result 
    * @return String 
    */
   String createResponseSecurityRestart(String deviceID, String result);

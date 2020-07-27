@@ -14,29 +14,12 @@ ScpResponseFactory::ScpResponseFactory()
 }
 
 // ====== Control Repsonses ======
-String ScpResponseFactory::createResponseControlUp(String deviceID, String status)
+String ScpResponseFactory::createResponseControl(String deviceID, String action, String result)
 {
-    String response = "{ \"type\" : \"control-up\",";
-    response +="\"deviceId\" : " + deviceID + ",";
-    response += "\"status\" : " + status + "\"";
-    response += "}";
-    return response;
-}
-
-String ScpResponseFactory::createResponseControlDown(String deviceID, String status)
-{
-    String response = "{ \"type\" : \"control-down\",";
-    response +="\"deviceId\" : " + deviceID + ",";
-    response += "\"status\" : " + status + "\"";
-    response += "}";
-    return response;
-}
-
-String ScpResponseFactory::createResponseControlStop(String deviceID, String status)
-{
-    String response = "{ \"type\" : \"control-stop\",";
-    response +="\"deviceId\" : " + deviceID + ",";
-    response += "\"status\" : " + status + "\"";
+    String response = "{ \"type\" : \"control\",";
+    response +="\"action\" :  \"" + action + "\",";
+    response +="\"deviceId\" : \"" + deviceID + "\",";
+    response += "\"result\" : \"" + result + "\"";
     response += "}";
     return response;
 }
@@ -44,8 +27,8 @@ String ScpResponseFactory::createResponseControlStop(String deviceID, String sta
 String ScpResponseFactory::createResponseControlStatus(String deviceID, String status)
 {
     String response = "{ \"type\" : \"control-status\",";
-    response +="\"deviceId\" : " + deviceID + ",";
-    response += "\"status\" : " + status + "\"";
+    response +="\"deviceId\" : \"" + deviceID + "\",";
+    response += "\"status\" : \"" + status + "\"";
     response += "}";
     return response;
 }
@@ -121,29 +104,6 @@ String ScpResponseFactory::createResponseDiscoverHello(String deviceID, String d
 
 // ====== HMAC SHA512 Response ======
 String ScpResponseFactory::createHmacResponse(String plainTextResponse) {  
-
-    //base64 encode response
-    /*
-    String stringForBase64 = plainTextResponse + "\0";
-    Serial.print("String for base64: ");
-    Serial.println(stringForBase64);
-    char charArrayPayload[256]{0};
-    memset(charArrayPayload, 0, 256 * sizeof(char));
-    stringForBase64.toCharArray(charArrayPayload, 256 * sizeof(char));
-    Serial.print("charArrayPayload for base64: ");
-    Serial.println(charArrayPayload);
-    bigBase64.encode(charArrayPayload);
-    Serial.print("rbase64.result: ");
-    Serial.println(bigBase64.result());
-    Serial.print("rbase64.result: ");
-    Serial.println(bigBase64.result());
-    char* encodedPayload = bigBase64.result();
-    Serial.print("Encoded payload: ");
-    Serial.println(encodedPayload);
-    String payloadToSend = String(encodedPayload);
-    Serial.print("payloadToSend: ");
-    Serial.println(payloadToSend);
-*/
 
     bigBase64.encode(plainTextResponse);
     char* encodedPayload = bigBase64.result();

@@ -137,6 +137,13 @@ public:
    */
   void setWifiPassword(String password);
 
+  /**
+   * @brief Resets the EEPROM to the default state
+   * 
+   */
+  void resetToDefault();
+
+
 private:
   const int FLAGS_ADDRESS = 0; // res. | res. | rest | res. | res. | Wifi Credentials set | Device ID set | Default PW Initialized
   const int FLAGS_LENGTH = 1;  // Byte 0

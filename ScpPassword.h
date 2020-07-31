@@ -18,6 +18,7 @@ class ScpPassword
 {
 
 public:
+  const String DEFAULT_PW = "01234567890123456789012345678901";
   /**
    * @brief Construct a new Scp Password object
    * 
@@ -69,9 +70,8 @@ public:
   void storePasswordInIntArray(uint8_t buffer[], uint8_t buffer_length);
 
 private:
- const String DEFAULT_PW = "1234567890123456";
- ScpEepromController scpEeprom;
- ScpDebug scpDebug;
+  ScpEepromController scpEeprom;
+  ScpDebug scpDebug;
 };
 
 #endif

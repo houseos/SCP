@@ -4,25 +4,38 @@ This is the header file for the ScpCrypto class.
 
 SPDX-License-Identifier: GPL-3.0-or-later
 
-Copyright (C) 2018 Benjamin Schilling
+Copyright (C) 2018 - 2020 Benjamin Schilling
 */
 
 #ifndef ScpCrypto_h
 #define ScpCrypto_h
 
-// store DevceID persistently
-#include <EEPROM.h>
-
-#include <Crypto.h>
-#include <rBase64.h>
-
+// Arduino Libraries
 #include "Arduino.h"
-#include "ScpDebug.h"
 
-#define BLOCK_SIZE 16
-#define KEY_LENGTH 16
+// ESP8266 Libraries
+#include <EEPROM.h>
+#include <ESP8266WiFi.h>
+#include <Crypto.h>
+
+// SCP Libraries
+#include "ScpDebug.h"
+#include "ScpDecode.h"
+
+// Defines for ChaCha20 Poly1305
+#define MAC_LENGTH 16
+#define KEY_LENGTH 32
+#define NONCE_LENGTH 12
+
+// Defines for the HMAC
+#define HMAC_LENGTH 64
+
+#define SUCCESS 0
+#define ERROR 1
 
 const int SEED_PIN = A0;
+
+using namespace experimental::crypto;
 
 class ScpCrypto
 {
@@ -35,51 +48,51 @@ public:
   ScpCrypto();
 
   /**
-   * @brief 
+   * @brief Uses ChaCha20_Poly1305 to decrypt the message and verify
+   *        the message authentication code afterwards
    * 
-   * @param enciphered 
-   * @param lengthOfText 
-   * @param key 
-   * @param iv 
+   * @param base64Payload The base64 encoded encrypted payload
+   * @param payloadLength The length of the encrypted payload
+   * @param key The key
+   * @param base64Nonce The base64 encoded nonce
+   * @param base64Mac The base64 encoded message authentication code
    * 
-   * @returns String
+   * @returns String The decrypted message on success, empty string on error
    */
-  String decrypt(char *enciphered, uint32_t lengthOfText,
-                  uint8_t *key, uint8_t *iv);
+  String decodeAndDecrypt(String base64Payload, int payloadLength,
+                          String key, String base64Nonce, String base64Mac);
 
   /**
-  * @brief 
+   * @brief Uses ChaCha20_Poly1305 to encrypt the message and generate
+   *        the message authentication code
+   * 
+   * @param payload The plaintext payload
+   * @param key The key
+   * @param base64Nonce The base64 encoded nonce after the encryption
+   * @param base64Mac The base64 encoded message authentication code after the encryption
+   * 
+   * @returns String The encrypted and encoded message on success, empty string on error
+   */
+  String encryptAndEncode(String payload, int* payloadLength,
+                        String key, String *base64Nonce, String *base64Mac);
+
+  /**
+  * @brief Generates a SHA512 HMAC for the given payload
   * 
-  * @param message 
-  * @param length 
-  * @param key 
-  * @param authCode 
+  * @param payload The payload to hash
+  * @param key The key for the HMAC as byte array
+  * @param keyLength The length of the key
+  * 
+  * @returns The resulting HMAC as HEX String
   */
-  void generateHMAC(byte *message, uint32_t length, uint8_t *key,
-                    byte *authCode);
+  String generateHMAC(String payload, uint8_t *key, size_t keyLength);
 
-  /**
- * @brief 
- * 
- */
-  void setIV();
+  String getNVCN();
 
-  /**
- * @brief 
- * 
- * @return String 
- */
-  String getIVString();
-
-  /**
- * @brief 
- * 
- * @return uint8_t* 
- */
-  uint8_t *getIVPlain();
+  bool checkNVCN(String nvcn);
 
 private:
-  uint8_t iv[BLOCK_SIZE];
+  long unsigned int currentNvcn;
 };
 
 #endif

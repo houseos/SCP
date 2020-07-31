@@ -9,12 +9,20 @@ Copyright (C) 2018 Benjamin Schilling
 
 #include "ScpDebug.h"
 
-ScpDebug::ScpDebug(){
-
+ScpDebug::ScpDebug()
+{
 }
 
-void ScpDebug::println(String debugString){
-    #ifdef DEBUG
-        Serial.println(debugString);
-    #endif
+void ScpDebug::println(logClass_t logClass, String debugString)
+{
+#ifdef DEBUG
+    Serial.println(debugString);
+#endif
+}
+
+void ScpDebug::print(logClass_t logClass, String debugString)
+{
+#ifdef DEBUG
+    Serial.print(debugString);
+#endif
 }

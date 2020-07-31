@@ -4,71 +4,92 @@ This is the source file for the ScpCrypto class.
 
 SPDX-License-Identifier: GPL-3.0-or-later
 
-Copyright (C) 2018 Benjamin Schilling
+Copyright (C) 2018 - 2020 Benjamin Schilling
 */
 
 #include "ScpCrypto.h"
 
-ScpCrypto::ScpCrypto() {
+ScpCrypto::ScpCrypto()
+{
+  currentNvcn = 1;
 }
 
-String ScpCrypto::decrypt(char *enciphered, uint32_t lengthOfText,
-                  uint8_t *key, uint8_t *iv)
+String ScpCrypto::decodeAndDecrypt(String payload, int payloadLength,
+                                   String key, String nonce, String mac)
 {
-
-  uint8_t deciphered[lengthOfText];
-  memset(deciphered, 0, (lengthOfText + 1) * sizeof(uint8_t));
-  // create aesDecryptor abject
-  AES aesDecryptor(key, iv, AES::AES_MODE_128, AES::CIPHER_DECRYPT);
-
-  // decrypt the message
-  aesDecryptor.process((uint8_t *)enciphered, deciphered, lengthOfText);
-
-  String output = "";
-  
-  uint8_t padlength = deciphered[lengthOfText-1];
-  for (uint32_t i = 0; i < (lengthOfText - padlength); i++ ){
-    output.concat((char)deciphered[i]);
-  }
-  return output;
-}
-
-void ScpCrypto::generateHMAC(byte *message, uint32_t length, uint8_t *key,
-                       byte *authCode)
-{
-  /* Create the HMAC instance with our key */
-  SHA256HMAC hmac(key, KEY_LENGTH);
-
-  /* Update the HMAC with just a plain string (null terminated) */
-  hmac.doUpdate(message, length);
-
-  /* Finish the HMAC calculation and return the authentication code */
-  hmac.doFinal(authCode);
-}
-
-void ScpCrypto::setIV()
-{
-  int seed;
-  for (int i = 0; i < 100; i++)
+  ScpDecode decoder();
+  // decode payload
+  rbase64.decode(payload);
+  char *decodedPayload = rbase64.result();
+  char correctPayload[payloadLength + 1];
+  memset(correctPayload, 0, payloadLength + 1);
+  memcpy(correctPayload, decodedPayload, payloadLength);
+  for (int i = 0; i < payloadLength; i++)
   {
-    seed += analogRead(SEED_PIN);
+    Serial.print("Element Payload ");
+    Serial.print(i, DEC);
+    Serial.print(": ");
+    Serial.println(correctPayload[i], HEX);
   }
-  randomSeed(seed);
-  for (int i = 0; i < BLOCK_SIZE; i++)
+
+  // decode mac
+  rbase64.decode(mac);
+  char *decodedMac = rbase64.result();
+  char correctMac[MAC_LENGTH + 1];
+  memset(correctMac, 0, MAC_LENGTH + 1);
+  memcpy(correctMac, decodedMac, MAC_LENGTH);
+  for (int i = 0; i < MAC_LENGTH; i++)
   {
-    iv[i] = random(0, 9);
+    Serial.print("Element Mac ");
+    Serial.print(i, DEC);
+    Serial.print(": ");
+    Serial.println(correctMac[i], HEX);
+  }
+
+  // key
+  unsigned char correctKey[KEY_LENGTH + 1];
+  memset(correctKey, 0, KEY_LENGTH + 1);
+  key.getBytes(correctKey, KEY_LENGTH + 1);
+
+  // decode nonce
+  rbase64.decode(nonce);
+  char *decodedNonce = rbase64.result();
+  char correctNonce[NONCE_LENGTH + 1];
+  memset(correctNonce, 0, NONCE_LENGTH + 1);
+  memcpy(correctNonce, decodedNonce, NONCE_LENGTH);
+
+  bool decryptionSucceeded = ChaCha20Poly1305::decrypt(correctPayload, payloadLength, correctKey, nullptr, sizeof 0, correctNonce, correctMac);
+
+  if (decryptionSucceeded)
+  {
+    return String(correctPayload);
+  }
+  else
+  {
+    return "";
   }
 }
 
-String ScpCrypto::getIVString(){
-    String ivString = "";
-    for (int i = 0; i < BLOCK_SIZE; i++)
-    {
-      ivString = ivString + String(iv[i]);
-    }
-    return ivString;
+String ScpCrypto::generateHMAC(String payload, uint8_t *key, size_t keyLength)
+{
+  return SHA512::hmacCT(payload.begin(), key, keyLength, HMAC_LENGTH);
 }
 
-uint8_t* ScpCrypto::getIVPlain(){
-    return iv;
+String ScpCrypto::getNVCN()
+{
+  currentNvcn++;
+  return String(currentNvcn);
+}
+
+bool ScpCrypto::checkNVCN(String nvcn)
+{
+  Serial.print("Expected NVCN:");
+  Serial.println(currentNvcn);
+  Serial.print("Received NVCN:");
+  Serial.println(nvcn);
+  if (currentNvcn == nvcn.toInt())
+  {
+    return true;
+  }
+  return false;
 }

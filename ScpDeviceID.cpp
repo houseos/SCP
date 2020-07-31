@@ -20,9 +20,7 @@ return scpEeprom.getDeviceId();
 void ScpDeviceID::setDeviceID()
 {
   char buffer[17];
-#ifdef DEBUG
-  Serial.println("    ScpDeviceID:setDeviceID: Mac Addresss: for device ID: " + WiFi.macAddress());
-#endif
+  scpDebug.println(scpDebug.deviceId, "    ScpDeviceID:setDeviceID: Mac Addresss: for device ID: " + WiFi.macAddress());
   WiFi.macAddress().toCharArray(buffer, 17);
 
   int seed;
@@ -36,19 +34,17 @@ void ScpDeviceID::setDeviceID()
   {
     deviceID += random(0, 9);
   }
-#ifdef DEBUG
-  Serial.println("    ScpDeviceID:setDeviceID: Random device id: " + deviceID);
-#endif
+  scpDebug.println(scpDebug.deviceId, "    ScpDeviceID:setDeviceID: Random device id: " + deviceID);
 
   scpEeprom.setDeviceId(deviceID);
   scpEeprom.setIsDeviceIdSet();
 #ifdef DEBUG
   if (!isDeviceIDSet())
   {
-    scpDebug.println("    ScpDeviceID:setDeviceID: error - device id setting failed.");
+    scpDebug.println(scpDebug.deviceId, "  ScpDeviceID:setDeviceID: error - device id setting failed.");
   }
   deviceID = readDeviceID();
-  scpDebug.println("    ScpDeviceID:setDeviceID:  DeviceID: " + deviceID);
+  scpDebug.println(scpDebug.deviceId, "    ScpDeviceID:setDeviceID:  DeviceID: " + deviceID);
 #endif
 
 }

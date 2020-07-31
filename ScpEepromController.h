@@ -15,7 +15,6 @@ Copyright (C) 2018 Benjamin Schilling
 #include "Arduino.h"
 #include "ScpDebug.h"
 
-
 class ScpEepromController
 {
 
@@ -26,6 +25,7 @@ public:
    */
   ScpEepromController();
 
+  // ====== Flags ======
 
   /**
    * @brief 
@@ -34,13 +34,13 @@ public:
    */
   bool isDeviceIdSet();
 
-    /**
+  /**
    * @brief 
    * 
    */
   void setIsDeviceIdSet();
 
-   /**
+  /**
    * @brief 
    * 
    * @return is password set 
@@ -53,60 +53,112 @@ public:
    */
   void setIsDefaultPasswordSet();
 
-   /**
+  /**
+   * @brief 
+   * 
+   * @return is password set 
+   */
+  bool areWifiCredentialsSet();
+
+  /**
+   * @brief 
+   * 
+   */
+  void setAreWifiCredentialsSet();
+  // ====== Values ======
+
+  /**
    * @brief 
    * 
    * @return password 
    */
   String getPassword();
 
-     /**
+  /**
    * @brief 
    * 
    * @return password 
    */
   void setPassword(String password);
 
-     /**
+  /**
    * @brief 
    * 
    * @return uint32_t 
    */
   uint32_t getCurrentPwNumber();
 
-       /**
+  /**
    * @brief 
    * 
    * @param uint32_t 
    */
   void setCurrentPwNumber(uint32_t currentPwNumber);
 
-    /**
+  /**
    * @brief 
    * 
    * @return password 
    */
   String getDeviceId();
 
-      /**
+  /**
    * @brief 
    * 
    * @param password 
    */
   void setDeviceId(String deviceId);
 
+  /**
+   * @brief 
+   * 
+   * @return SSID 
+   */
+  String getWifiSSID();
+
+  /**
+   * @brief 
+   * 
+   * @param ssid 
+   */
+  void setWifiSSID(String ssid);
+
+  /**
+   * @brief 
+   * 
+   * @return Wifi Password 
+   */
+  String getWifiPassword();
+
+  /**
+   * @brief 
+   * 
+   * @param password 
+   */
+  void setWifiPassword(String password);
+
+  /**
+   * @brief Resets the EEPROM to the default state
+   * 
+   */
+  void resetToDefault();
+
+
 private:
-    const int FLAGS_ADDRESS = 0; // Device ID | PW_SET
-    const int FLAGS_LENGTH = 1; // 0
-    const int PW_ADDRESS = 1;
-    const int PW_LENGTH = 16; // 1 - 17
-    const int CURRENT_PW_NUMBER_ADDRESS = 18;
-    const int CURRENT_PW_NUMBER_LENGTH = 32; // 18 - 49
-    const int DEVICE_ID_ADDRESS = 50;
-    const int DEVICE_ID_LENGTH = 16; // 50 - 65
+  const int FLAGS_ADDRESS = 0; // res. | res. | rest | res. | res. | Wifi Credentials set | Device ID set | Default PW Initialized
+  const int FLAGS_LENGTH = 1;  // Byte 0
+  const int PW_ADDRESS = 1;
+  const int PW_LENGTH = 32; // Bytes 1 - 32
+  const int CURRENT_PW_NUMBER_ADDRESS = 33;
+  const int CURRENT_PW_NUMBER_LENGTH = 32; // Bytes 33 - 64
+  const int DEVICE_ID_ADDRESS = 65;
+  const int DEVICE_ID_LENGTH = 16; // Bytes 65 - 80
+  const int WIFI_SSID_ADDRESS = 81;
+  const int WIFI_SSID_LENGTH = 32; // Bytes 81 - 112
+  const int WIFI_PASSWORD_ADDRESS = 113;
+  const int WIFI_PASSWORD_LENGTH = 32; // Bytes 113 - 144
 
-    ScpDebug scpDebug;
-
+  ScpDebug scpDebug;
 };
 
 #endif

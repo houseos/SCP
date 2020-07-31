@@ -10,12 +10,16 @@ Copyright (C) 2018 Benjamin Schilling
 #ifndef SCP_h
 #define SCP_h
 
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WiFiMulti.h>
 #include <ESP8266WebServer.h>
 
 #include "ScpDeviceID.h"
 #include "ScpPassword.h"
 #include "ScpCrypto.h"
-#include "ScpMessageFactory.h"
+#include "ScpResponseFactory.h"
+#include "ScpEepromController.h"
 
 #include "ScpDebug.h"
 
@@ -34,34 +38,34 @@ public:
    */
   void init(String deviceType);
 
-    /**
+  /**
    * @brief 
    * 
    */
   void handleClient();
 
-  void registerControlUpFunction(std::function<void()> fun);
-
-  void registerControlDownFunction(std::function<void()> fun);
-   
-  void registerControlStopFunction(std::function<void()> fun);
+  void registerControlFunction(std::function<void(String)> fun);
 
 private:
-  ScpPassword password;
-  ScpDeviceID dID;
-  ScpCrypto crypto;
-  ScpMessageFactory messageFactory;
+  ScpPassword scpPassword;
+  ScpDeviceID scpDeviceID;
+  ScpCrypto scpCrypto;
+  ScpResponseFactory scpResponseFactory;
+  ScpEepromController scpEepromController;
   ScpDebug scpDebug;
 
   String deviceID = "";
   String deviceType = "";
   ESP8266WebServer *server;
+  ESP8266WiFiMulti wifiMulti;
   String DEFAULT_PW = "1234567890123456";
 
-  std::function<void()> controlUpFunction;
-  std::function<void()> controlDownFunction;
-  std::function<void()> controlStopFunction;
+  std::function<void(String)> controlFunction;
 
+  // Helpers
+  bool isDeviceIdValid(String devId);
+
+  bool isNVCNValid(String nvcn);
 
   // HTTP Endpoints
   /**
@@ -74,13 +78,13 @@ private:
    * @brief 
    * 
    */
-  void handleSecurityFetchNVCN();
+  void handleDiscoverHello();
 
   /**
    * @brief 
    * 
    */
-  void handleDiscoverHello();
+  void handleSecurityFetchNVCN();
 
   /**
    * @brief 
@@ -88,13 +92,26 @@ private:
    */
   void handleNotFound();
   // HTTP Error Methods
-  
+
   /**
    * @brief 
    * 
    */
   void sendMalformedPayload();
 
+  // State Handling
+
+  /**
+   * @brief 
+   * 
+   */
+  void provisioningMode();
+
+  /**
+   * @brief 
+   * 
+   */
+  void controlMode();
 };
 
 #endif

@@ -1,4 +1,6 @@
 # secure-control-protocol - Work in progress
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FbenjaminSchilling33%2Fsecure-control-protocol.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FbenjaminSchilling33%2Fsecure-control-protocol?ref=badge_shield)
+
 
 ## Table of contents
 
@@ -854,8 +856,9 @@ SPDX-License-Identifier: GPL-3. 0-or-later
 
 The full version of the license can be found in LICENSE. 
 
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FbenjaminSchilling33%2Fsecure-control-protocol.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FbenjaminSchilling33%2Fsecure-control-protocol?ref=badge_large)
+
 If you need a license for commercial use, please contact [Benjamin Schilling](mailto:schilling. benjamin@delusionsoftware. de). 
 
 ## Copyright
-
-Copyright (C) 2018 Benjamin Schilling
+Copyright (C) 2018 - 2020 Benjamin Schilling

@@ -1,4 +1,6 @@
 # secure-control-protocol - Work in progress
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FbenjaminSchilling33%2Fsecure-control-protocol.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FbenjaminSchilling33%2Fsecure-control-protocol?ref=badge_shield)
+
 
 ## Table of contents
 
@@ -39,6 +41,9 @@
   - [Project Philosophy](#Project-Philosophy)
   - [License](#License)
   - [Copyright](#Copyright)
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FbenjaminSchilling33%2Fsecure-control-protocol.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FbenjaminSchilling33%2Fsecure-control-protocol?ref=badge_large)
 
 ## Hint
 A PDF version of this README with all images is stored in the `./doc/` directory.

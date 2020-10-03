@@ -2,27 +2,20 @@
   "name": "Secure Control Protocol",
   "keywords": "esp8266, security, chacha20poly1305, iot, protocol, json, rest, http, wifi",
   "description": "ESP8266 Arduino Library for the Secure Control Protocol",
-  "repository":
-  {
+  "repository": {
     "type": "git",
-    "url": "https://github.com/benjaminSchilling33/secure-control-protocol"
+    "url": "https://github.com/HouseOS/secure-control-protocol"
   },
-  "authors": 
-  [
-    {
-      "name": "Benjamin Schilling",
-      "email": "benjamin.schilling33@gmail.com",
-      "maintainer": true
-    }
-  ],
-  "dependencies":
-  [
-  {
-    "name": "rBASE64",
-    "authors": "Abhijit Bose",
+  "authors": [{
+    "name": "Benjamin Schilling",
+    "email": "benjamin.schilling33@gmail.com",
+    "maintainer": true
+  }],
+  "dependencies": [{
+    "name": "rBase64",
+    "authors": "Abhijit Bose (@boseji)",
     "frameworks": "arduino"
-  }
-  ],
+  }],
   "version": "0.0.1",
   "frameworks": "arduino",
   "platforms": "*"

@@ -129,6 +129,7 @@ void SCP::handleSecureControl()
             }
             String answer = "";
             if(wifiMulti.run() == WL_CONNECTED){
+                Serial.println("Failed connecting to wifi.");
                 WiFi.disconnect();
                 //if successful store credentials  
                 scpEepromController.setWifiSSID(ssid);
@@ -136,6 +137,7 @@ void SCP::handleSecureControl()
                 scpEepromController.setAreWifiCredentialsSet();
                 answer = scpResponseFactory.createResponseSecurityWifiConfig(this->deviceID, "success");
             } else {
+                Serial.println("Connected to wifi.");
                 //send failed response
                 answer = scpResponseFactory.createResponseSecurityWifiConfig(this->deviceID, "error");
             }
@@ -290,7 +292,7 @@ void SCP::controlMode()
     {
         delay(500);
         scpDebug.println(scpDebug.base, "  SCP.controlMode: Connecting...");
-        digitalWrite(D5, !digitalRead(D5));
+        //digitalWrite(D5, !digitalRead(D5));
     }
 
     scpDebug.print(scpDebug.base, "  SCP.controlMode: Connected to Wifi:");

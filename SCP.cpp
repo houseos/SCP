@@ -14,7 +14,7 @@ Copyright (C) 2018 Benjamin Schilling
  */
 SCP::SCP()
 {
-    server = new ESP8266WebServer(80);
+    server = new ESP8266WebServer(19316);
     EEPROM.begin(512);
 }
 
@@ -120,7 +120,8 @@ void SCP::handleSecureControl()
             //wifiMulti.addAP(ssid.c_str(), preSharedKey.c_str());
             wifiMulti.addAP(ssid.c_str(), preSharedKey.c_str());
             uint8_t tries = 1;
-            while (wifiMulti.run() != WL_CONNECTED && tries <= 5) {
+            while (wifiMulti.run() != WL_CONNECTED && tries <= 5)
+            {
                 Serial.print("Try to connect to Wifi, try: ");
                 Serial.print(tries);
                 Serial.println("/5");
@@ -128,16 +129,19 @@ void SCP::handleSecureControl()
                 delay(2000);
             }
             String answer = "";
-            if(wifiMulti.run() == WL_CONNECTED){
-                Serial.println("Failed connecting to wifi.");
+            if (wifiMulti.run() == WL_CONNECTED)
+            {
+                Serial.println("Connected to wifi.");
                 WiFi.disconnect();
-                //if successful store credentials  
+                //if successful store credentials
                 scpEepromController.setWifiSSID(ssid);
                 scpEepromController.setWifiPassword(preSharedKey);
                 scpEepromController.setAreWifiCredentialsSet();
                 answer = scpResponseFactory.createResponseSecurityWifiConfig(this->deviceID, "success");
-            } else {
-                Serial.println("Connected to wifi.");
+            }
+            else
+            {
+                Serial.println("Failed connecting to wifi.");
                 //send failed response
                 answer = scpResponseFactory.createResponseSecurityWifiConfig(this->deviceID, "error");
             }

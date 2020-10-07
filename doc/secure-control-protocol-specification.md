@@ -139,6 +139,8 @@ client ..> storage : Store passwords
 
 ```
 
+The SCP webserver on the device is running on port 18215 which reflects the numbers of the letters, S (19), C (3) and P (16) in the alphabet.
+
 ## 2. Provisioning of devices
 
 When the default password of the secure-controller is set or no Wifi credentials are provisioned the secure-controller provides a Wifi Access Point using WPA2-PSK which can be accessed with the [default credentials from the annex](#81-default-credentials). 

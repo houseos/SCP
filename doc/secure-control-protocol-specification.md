@@ -33,8 +33,8 @@ The goal is to provide a ready to use protocol and server where the user only ha
 
 ## 1. Architecture
 
-``` puml
-
+```plantuml
+@startuml
 caption System Component Diagram
 
 skinparam monochrome true
@@ -91,6 +91,7 @@ gui ..> client : <<library>>
 
 client ..> storage : Store passwords 
 
+@enduml
 ```
 
 The SCP webserver on the device is running on port 18215 which reflects the numbers of the letters, S (19), C (3) and P (16) in the alphabet.
@@ -115,8 +116,8 @@ If the secure-controller default password and the wifi credentials are changed /
 If the connection to the supplied home network Wifi fails, the secure-controller acts as a Wifi access point in order to receive the new home network credentials. 
 But in contrast to the beginning of this chapter the password for this Wifi will now be the provisioned secure-controller password. 
 
-``` puml
-
+```plantuml
+@startuml
 caption Provisioning Sequence Diagram
 
 skinparam monochrome true
@@ -191,6 +192,7 @@ note right of server
     Access Point is disabled
 end note
 
+@enduml
 ```
 
 ## 3. Discovery of devices
@@ -201,8 +203,8 @@ To do this the client connects to the secure-control-discover-hello ressource of
 
 The client stores the IP addresses of all devices which respond with a HTTP response 200 OK with information in the body. 
 
-``` puml
-
+```plantuml
+@startuml
 caption Discover Sequence Diagram
 
 skinparam monochrome true
@@ -229,6 +231,8 @@ server2 --> client : Respond with HTTP 200 OK containing discover-response
 
 client -> webserver : Connect to /secure-control-discover-hello ressource
 webserver --> client : Respond with HTTP 404 Not found
+
+@enduml
 ```
 
 ## 4. Security
@@ -312,8 +316,8 @@ The NVCN used for replay protection is randomly generated on secure-controller s
 It is being fetched from the control device by using the security-fetch-NVCN message before sending a message to the secure-controller. 
 The NVCN is incremented by the secure-controller after every [security-fetch-NVCN message](#631-security-fetch-NVCN). 
 
-``` puml
-
+```plantuml
+@startuml
 caption Message Processing Sequence Diagram
 
 skinparam monochrome true
@@ -347,6 +351,7 @@ server -> server : Execute command
 
 server --> client : Send response
 
+@enduml
 ```
 
 ## 6. REST Message Types

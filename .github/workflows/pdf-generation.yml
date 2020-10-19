@@ -10,13 +10,14 @@ jobs:
       image:  google/dart:latest
 
     steps:
+    - name: install apt dependencies
+      run: sudo apt-get install pandoc texlive
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2-beta
       with:
         node-version: '12'
     - name: install dependencies and generate PDF
       run: |
-        sudo apt-get install pandoc texlive
         npm install -g pandoc-plantuml
         pandoc -s --columns=100 -F pandoc-plantuml -o secure-control-protocol-specification.pdf doc/secure-control-protocol-specification.md
     - uses: actions/upload-artifact@v1

@@ -11,7 +11,9 @@ jobs:
 
     steps:
     - name: install apt dependencies
-      run: apt-get install pandoc texlive
+      run: |
+        apt-get update
+        apt-get install pandoc texlive
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2-beta
       with:

@@ -297,7 +297,7 @@ The method used is ChaCha20 Poly1305 with the pre-shared key, a nonce and a salt
 
 `ChaCha20_Poly1305(<key>, <nonce>, <payload>) = Encrypted Message, MAC` 
 
-Requests send by the client contain the following data:
+Requests send by the client contain the following URL encoded data:
 ```json
 {
     "payload": "<payload>",
@@ -309,7 +309,7 @@ Requests send by the client contain the following data:
 The playload is assembled as follows:
 `payload(<salt> + ":" + "<message type>" + ":" + "<device id>" + ":" + <NVCN> + ":" + <plain text message>)` 
 
-The **NVCN** is intended to prevent replay attacks and needs to be fetched from the secure-controller by the control device for every single message before encrypting it. 
+The **Next Valid Control Number (NVCN)** is intended to prevent replay attacks and needs to be fetched from the secure-controller by the control device for every single message before encrypting it. 
 The correctness of the supplied **NVCN** of each message is checked by the secure-controller. 
 
 The salt in the payload is used to strengthen the encryption by reducing the possibility of using the same key, nonce and payload for the encryption. The salt is discarded by the communication partner receiving it.
@@ -337,8 +337,8 @@ To protect the Wifi credentials on the device, they are encrypted using a hardwa
 
 No hardware attacks are currently considered. 
 The flash memory of the secure-controller stores the secure-controller password which could be read and missused. 
-This attack is considered to be unlikely and of limited use only since every device has a seperate password. 
-Never the less any ideas / comments on this issue are very welcome. 
+This attack is considered to be unlikely and of limited use only since every device has a separate password. 
+Nevertheless any ideas / comments on this issue are very welcome. 
 
 ## 5. HTTP Ressources
 
@@ -450,9 +450,7 @@ All messages except for the discover-hello message, respond with a HTTP 200 OK m
 
 #### 6.1.1 discover-hello
 ```
-
 Ressource: http://device-ip/secure-control/discover-hello?payload=discover-hello
-
 ``` 
 
 The discover-hello message is sent to all IP addresses of the home network subnet to determine which IP addresses belongs to a secure-controller. 

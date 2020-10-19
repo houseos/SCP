@@ -13,7 +13,9 @@ jobs:
     - name: install apt dependencies
       run: |
         apt-get update
-        apt-get install pandoc texlive -y
+        apt-get install texlive -y
+        wget https://github.com/jgm/pandoc/releases/download/2.11.0.2/pandoc-2.11.0.2-1-amd64.deb
+        dpkg -i pandoc-2.11.0.2-1-amd64.deb
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2-beta
       with:

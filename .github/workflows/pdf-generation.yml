@@ -13,7 +13,7 @@ jobs:
     - name: install apt dependencies
       run: |
         apt-get update
-        apt-get install texlive wget -y
+        apt-get install texlive librsvg2-bin wget -y
         wget https://github.com/jgm/pandoc/releases/download/2.11.0.2/pandoc-2.11.0.2-1-amd64.deb
         dpkg -i pandoc-2.11.0.2-1-amd64.deb
     - uses: actions/checkout@v2

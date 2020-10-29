@@ -19,43 +19,29 @@ class ScpDeviceID
 {
 
 public:
-  /**
+    /**
    * @brief Construct a new ScpDeviceID object
    * 
    */
-  ScpDeviceID();
+    ScpDeviceID();
 
-  /**
-   * @brief Set the Device I D object
-   * 
-   */
-  void setDeviceID();
-
-  /**
+    /**
    * @brief 
    * 
-   * @return true 
-   * @return false 
+   * @param deviceName 
    */
-  bool isDeviceIDSet();
+    void writeDeviceName(String deviceName);
 
-  /**
+    /**
    * @brief 
    * 
    * @return String 
    */
-  String readDeviceID();
+    String readDeviceName();
 
 private:
-  /**
-   * @brief 
-   * 
-   * @return void 
-   */
-  void writeDeviceID(String deviceID);
-
-  ScpEepromController scpEeprom;
-  ScpDebug scpDebug;
+    ScpEepromController scpEeprom;
+    ScpDebug scpDebug;
 };
 
 #endif

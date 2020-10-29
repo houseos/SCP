@@ -430,7 +430,9 @@ hmac = SHA512_HMAC("discover-response" + device ID + device Type + IP Address
 | --------------------- | ---------------------------------------- |
 | type                  | discover-response                        |
 | deviceId              | device ID (16 byte)                      |
+| deviceName            | device name                              |
 | deviceType            | device type                              |
+| action                | array of supported action                |
 | currentPasswordNumber | number of password changes, 0 is default |
 | hmac                  | Keyed-Hashed Massage Authentication Code |
 Example:
@@ -438,7 +440,12 @@ Example:
 {
     "type" : "discover-response",
     "deviceId" : "device ID",
+    "deviceName" : "device Name",
     "deviceType" : "secure-controller",
+    "actions": [
+        "<action 1>",
+        "<action 2>"
+    ],
     "currentPasswordNumber" : "<number of password changes>",
     "hmac" : "<Keyed-Hash Massage Authentication Code>"
 }
@@ -501,7 +508,34 @@ Example:
     "currentPasswordNumber" : "<number of password changes>",
     "result" : "<done / error>"
 }
+``` 
 
+#### 6.3.2 security-name-change
+
+The security-name-change message tells the device to change it's old device name to the new one.
+
+Additionally the deviceID provided in the payload must match the configured device ID.
+
+`plain text = <salt> + ":" + "security-name-change" + ":" + <device ID> + ":" + <NVCN> + ":" + <new name>`
+
+The response payload is a JSON representation of the following data:
+
+| Key        | Possible values      |
+| ---------- | -------------------- |
+| type       | security-name-change |
+| deviceId   | device ID            |
+| deviceName | device name          |
+| result     | done / error         |
+
+Example:
+```json
+{
+
+    "type" : "security-name-change",
+    "deviceId" : "device ID",
+    "deviceName" : "device name",
+    "result" : "<done / error>"
+}
 ``` 
 
 #### 6.3.3 security-wifi-config

@@ -78,7 +78,6 @@ void ScpEepromController::setIsDeviceIdSet()
    uint8_t byteOne = EEPROM.read(FLAGS_ADDRESS);
    EEPROM.write(FLAGS_ADDRESS, (byteOne | 0x02));
    EEPROM.commit();
-
 }
 
 /**
@@ -133,7 +132,7 @@ String ScpEepromController::getPassword()
 /**
    * @brief 
    * 
-   * @return password 
+   * @param password 
    */
 void ScpEepromController::setPassword(String password)
 {
@@ -280,7 +279,46 @@ void ScpEepromController::setWifiPassword(String password)
 /**
    * @brief 
    * 
-   * @param password 
+   * @return Device Name 
+   */
+String ScpEepromController::getDeviceName()
+{
+   String deviceName = "";
+   for (int i = DEVICE_NAME_ADDRESS; i <= DEVICE_NAME_LENGTH; i++)
+   {
+      scpDebug.println(scpDebug.eeprom, "      ScpEepromController.getDeviceName: EEPROM Addr: " + String(i));
+      deviceName = deviceName + char(EEPROM.read(i));
+      scpDebug.println(scpDebug.eeprom, "      ScpEepromController.getDeviceName: char " + String(char(EEPROM.read(i))));
+   }
+   return deviceName;
+}
+
+/**
+   * @brief 
+   * 
+   * @param deviceName 
+   */
+void ScpEepromController::setDeviceName(String deviceName)
+{
+   // Clear the device name first, to make sure it does not contain anywhing
+   for (int i = 0; i < DEVICE_NAME_LENGTH; i++)
+   {
+      EEPROM.write(DEVICE_NAME_ADDRESS + i, (uint8_t)deviceName.charAt(i));
+   }
+   EEPROM.commit();
+
+   // Set the new deviceName
+   for (int i = 0; i < DEVICE_NAME_LENGTH; i++)
+   {
+      EEPROM.write(DEVICE_NAME_ADDRESS + i, (uint8_t)deviceName.charAt(i));
+   }
+   EEPROM.commit();
+}
+
+/**
+   * @brief 
+   * 
+   * 
    */
 void ScpEepromController::resetToDefault()
 {

@@ -16,7 +16,7 @@ Copyright (C) 2018 Benjamin Schilling
 #include "ScpPassword.h"
 #include "ScpCrypto.h"
 
-#define  PW_LENGTH 16
+#define PW_LENGTH 16
 
 class ScpResponseFactory
 {
@@ -28,7 +28,7 @@ public:
    */
   ScpResponseFactory();
 
-// ====== Control Responses ======
+  // ====== Control Responses ======
 
   /**
    * @brief Create a Response Control string
@@ -48,7 +48,7 @@ public:
    */
   String createResponseControlStatus(String deviceID, String status);
 
-// ====== Security Responses ======
+  // ====== Security Responses ======
 
   /**
    * @brief Create a Response Security Fetch NVCN string
@@ -57,19 +57,33 @@ public:
    * @param ivString 
    * @return String 
    */
-  String createResponseSecurityFetchNVCN(String deviceID,String nvcnString);
+  String createResponseSecurityFetchNVCN(String deviceID, String nvcnString);
 
   /**
    * @brief Create a Response Security Pw Change string
    * 
+   * @param deviceID 
+   * @param numberOfPasswordChanges
    * @param result 
    * @return String 
    */
   String createResponseSecurityPwChange(String deviceID, String numberOfPasswordChanges, String result);
 
   /**
+   * @brief Create a Response Security Name Change string
+   * 
+   * @param deviceID 
+   * @param deviceName
+   * @param result 
+   * @return String 
+   */
+  String createResponseSecurityNameChange(String deviceID, String deviceName, String result);
+
+  /**
    * @brief Create a Response Security Wifi Config string
    * 
+   * @param deviceID 
+   * @param result 
    * @return String 
    */
   String createResponseSecurityWifiConfig(String deviceID, String result);
@@ -90,8 +104,8 @@ public:
    */
   String createResponseSecurityRestart(String deviceID, String result);
 
-// ====== Discovery Responses ======
-  
+  // ====== Discovery Responses ======
+
   /**
    * @brief Create a Response Discover Hello object
    * 
@@ -103,7 +117,7 @@ public:
    */
   String createResponseDiscoverHello(String deviceID, String deviceType, String currentPasswordNumber);
 
-// ====== HMAC SHA512 Responses ======
+  // ====== HMAC SHA512 Responses ======
   /**
    * @brief Create a response JSON string protected by an HMAC 
    * 

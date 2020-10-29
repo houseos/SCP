@@ -98,14 +98,14 @@ public:
   /**
    * @brief 
    * 
-   * @return password 
+   * @return deviceID 
    */
   String getDeviceId();
 
   /**
    * @brief 
    * 
-   * @param password 
+   * @param deviceId 
    */
   void setDeviceId(String deviceId);
 
@@ -138,11 +138,24 @@ public:
   void setWifiPassword(String password);
 
   /**
+   * @brief 
+   * 
+   * @return device Name 
+   */
+  String getDeviceName();
+
+  /**
+   * @brief 
+   * 
+   * @param deviceName 
+   */
+  void setDeviceName(String deviceName);
+
+  /**
    * @brief Resets the EEPROM to the default state
    * 
    */
   void resetToDefault();
-
 
 private:
   const int FLAGS_ADDRESS = 0; // res. | res. | rest | res. | res. | Wifi Credentials set | Device ID set | Default PW Initialized
@@ -157,6 +170,8 @@ private:
   const int WIFI_SSID_LENGTH = 32; // Bytes 81 - 112
   const int WIFI_PASSWORD_ADDRESS = 113;
   const int WIFI_PASSWORD_LENGTH = 32; // Bytes 113 - 144
+  const int DEVICE_NAME_ADDRESS = 145;
+  const int DEVICE_NAME_LENGTH = 32; // Bytes 145 - 177
 
   ScpDebug scpDebug;
 };

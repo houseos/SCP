@@ -106,6 +106,18 @@ void SCP::handleSecureControl()
             server->send(200, "application/json", hmacAnswer);
             return;
         }
+        else if (messageType == "security-name-change")
+        {
+            Serial.println("received security-name-change");
+            remaining = remaining.substring(remaining.indexOf(":") + 1);
+            String newName = remaining.substring(0, remaining.indexOf(":"));
+            scpDeviceName.writeDeviceName(newName);
+            String answer = scpResponseFactory.createResponseSecurityPwChange(this->deviceID, scpDeviceName.readDeviceName(), "done");
+            String hmacAnswer = scpResponseFactory.createHmacResponse(answer);
+            scpDebug.println(scpDebug.base, "  SCP.handleSecureControl:  security-pw-change response: " + hmacAnswer);
+            server->send(200, "application/json", hmacAnswer);
+            return;
+        }
         else if (messageType == "security-wifi-config")
         {
             Serial.println("received security-wifi-config");
@@ -122,7 +134,7 @@ void SCP::handleSecureControl()
             uint8_t tries = 1;
             while (wifiMulti.run() != WL_CONNECTED && tries <= 5)
             {
-                Serial.print("Try to connect to Wifi, try: ");
+                Serial.print("Try to connect to Wifi, try#: ");
                 Serial.print(tries);
                 Serial.println("/5");
                 tries++;
@@ -306,10 +318,14 @@ void SCP::controlMode()
     scpDebug.println(scpDebug.base, ipAddress);
 }
 
-void SCP::init(String deviceType)
+void SCP::init(String deviceType, uint8_t numberOfActions, char *actions[])
 {
     // Set the device type
     this->deviceType = deviceType;
+
+    // Set the supported actions
+    this->numberOfActions = numberOfActions;
+    this->actions = actions;
 
     // If the default password was not set, set it now
     if (!scpPassword.isDefaultPasswordSetOnce())

@@ -59,6 +59,8 @@ private:
   ESP8266WebServer *server;
   ESP8266WiFiMulti wifiMulti;
   String DEFAULT_PW = "1234567890123456";
+  uint8_t numberOfActions;
+  char *actions[];
 
   std::function<void(String)> controlFunction;
 

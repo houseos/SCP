@@ -91,7 +91,7 @@ String ScpResponseFactory::createResponseSecurityRestart(String deviceID, String
 }
 
 // ====== Discover Response ======
-String ScpResponseFactory::createResponseDiscoverHello(String deviceID, String deviceType, String deviceName, uint8_t numberOfActions, char *actions[], String currentPasswordNumber)
+String ScpResponseFactory::createResponseDiscoverHello(String deviceID, String deviceType, String deviceName, uint8_t numberOfActions, char (*actions)[], String currentPasswordNumber)
 {
     String stringForHMAC = "discover-response" + deviceID + deviceType + currentPasswordNumber + "\0";
 
@@ -108,9 +108,9 @@ String ScpResponseFactory::createResponseDiscoverHello(String deviceID, String d
     response += "\"deviceType\":\"" + deviceType + "\",";
     response += "\"deviceName\":\"" + deviceName + "\",";
     response += "\"actions\": [";
-    for (uint8_t i = 0; i < numberOfActions)
+    for (uint8_t i = 0; i < numberOfActions; i++)
     {
-        response += "\"" + actions[i] + "\",";
+        response += "\"" + String((*actions)[i]) + "\",";
     }
     response += "],";
     response += "\"currentPasswordNumber\":\"" + currentPasswordNumber + "\",";

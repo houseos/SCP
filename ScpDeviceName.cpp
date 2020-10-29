@@ -1,13 +1,13 @@
 /*
 secure-control-protocol
-This is the source file for the ScpDeviceID class.
+This is the source file for the ScpDeviceName class.
 
 SPDX-License-Identifier: GPL-3.0-or-later
 
 Copyright (C) 2018 Benjamin Schilling
 */
 
-#include "ScpDeviceID.h"
+#include "ScpDeviceName.h"
 
 ScpDeviceName::ScpDeviceName()
 {

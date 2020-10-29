@@ -1,21 +1,21 @@
 /*
 secure-control-protocol
-This is the header file for the ScpDeviceID class.
+This is the header file for the ScpDeviceName class.
 
 SPDX-License-Identifier: GPL-3.0-or-later
 
 Copyright (C) 2018 Benjamin Schilling
 */
 
-#ifndef ScpDeviceID_h
-#define ScpDeviceID_h
+#ifndef ScpDeviceName_h
+#define ScpDeviceName_h
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
 #include "ScpDebug.h"
 #include "ScpEepromController.h"
 
-class ScpDeviceID
+class ScpDeviceName
 {
 
 public:
@@ -23,7 +23,7 @@ public:
    * @brief Construct a new ScpDeviceID object
    * 
    */
-    ScpDeviceID();
+    ScpDeviceName();
 
     /**
    * @brief 

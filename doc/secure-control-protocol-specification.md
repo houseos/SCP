@@ -1,51 +1,5 @@
 # secure-control-protocol - Work in progress
 
-## Table of contents
-
-- [secure-control-protocol - Work in progress](#secure-control-protocol---work-in-progress)
-  - [Table of contents](#table-of-contents)
-  - [Terms and abbreviations](#terms-and-abbreviations)
-  - [0. About](#0-about)
-    - [0. 1 Purpose](#0-1-purpose)
-    - [0. 2 Goal](#0-2-goal)
-  - [1. Architecture](#1-architecture)
-  - [2. Provisioning of devices](#2-provisioning-of-devices)
-  - [3. Discovery of devices](#3-discovery-of-devices)
-  - [4. Security](#4-security)
-    - [4. 1 Storage of Wifi Credentials on the device](#4-1-storage-of-wifi-credentials-on-the-device)
-  - [5. HTTP Ressources](#5-http-ressources)
-    - [5. 1 Typical message flow](#5-1-typical-message-flow)
-  - [6. REST Message Types](#6-rest-message-types)
-    - [6.1 Discover message types](#61-discover-message-types)
-      - [6.1.1 discover-hello](#611-discover-hello)
-        - [Variables](#variables)
-    - [6.3 Security messages](#63-security-messages)
-      - [6.3.1 security-fetch-nvcn](#631-security-fetch-nvcn)
-      - [6.3.2 security-pw-change](#632-security-pw-change)
-      - [6.3.3 security-wifi-config](#633-security-wifi-config)
-      - [6.3.4 security-reset-to-default](#634-security-reset-to-default)
-      - [6.3.5 security-restart](#635-security-restart)
-    - [6.2 Control messages](#62-control-messages)
-      - [6.2.1 control](#621-control)
-      - [6.2.4 control-status](#624-control-status)
-  - [8. Annex](#8-annex)
-    - [8. 1 Default credentials](#8-1-default-credentials)
-      - [8. 1. 1 Default device password](#8-1-1-default-device-password)
-      - [8. 1. 2 Default Wifi Access Point credentials](#8-1-2-default-wifi-access-point-credentials)
-    - [8. 2 ESP8266 EEPROM Layout](#8-2-esp8266-eeprom-layout)
-      - [8. 3 Flags](#8-3-flags)
-        - [8. 4 Device Password](#8-4-device-password)
-        - [8. 5 Current Password Number](#8-5-current-password-number)
-        - [8. 6 Device ID](#8-6-device-id)
-        - [8. 7 WIFI SSID](#8-7-wifi-ssid)
-        - [8. 8 WIFI Password](#8-8-wifi-password)
-  - [Project Philosophy](#project-philosophy)
-  - [Versions](#versions)
-    - [0. 0. 2](#0-0-2)
-    - [0. 0. 1](#0-0-1)
-  - [License](#license)
-  - [Copyright](#copyright)
-
 ## Terms and abbreviations
 
 The following terms and abbreviations are used in this document. 
@@ -79,8 +33,8 @@ The goal is to provide a ready to use protocol and server where the user only ha
 
 ## 1. Architecture
 
-``` puml
-
+```plantuml
+@startuml
 caption System Component Diagram
 
 skinparam monochrome true
@@ -137,6 +91,7 @@ gui ..> client : <<library>>
 
 client ..> storage : Store passwords 
 
+@enduml
 ```
 
 The SCP webserver on the device is running on port 18215 which reflects the numbers of the letters, S (19), C (3) and P (16) in the alphabet.
@@ -161,8 +116,8 @@ If the secure-controller default password and the wifi credentials are changed /
 If the connection to the supplied home network Wifi fails, the secure-controller acts as a Wifi access point in order to receive the new home network credentials. 
 But in contrast to the beginning of this chapter the password for this Wifi will now be the provisioned secure-controller password. 
 
-``` puml
-
+```plantuml
+@startuml
 caption Provisioning Sequence Diagram
 
 skinparam monochrome true
@@ -237,6 +192,7 @@ note right of server
     Access Point is disabled
 end note
 
+@enduml
 ```
 
 ## 3. Discovery of devices
@@ -247,8 +203,8 @@ To do this the client connects to the secure-control-discover-hello ressource of
 
 The client stores the IP addresses of all devices which respond with a HTTP response 200 OK with information in the body. 
 
-``` puml
-
+```plantuml
+@startuml
 caption Discover Sequence Diagram
 
 skinparam monochrome true
@@ -275,6 +231,8 @@ server2 --> client : Respond with HTTP 200 OK containing discover-response
 
 client -> webserver : Connect to /secure-control-discover-hello ressource
 webserver --> client : Respond with HTTP 404 Not found
+
+@enduml
 ```
 
 ## 4. Security
@@ -358,8 +316,8 @@ The NVCN used for replay protection is randomly generated on secure-controller s
 It is being fetched from the control device by using the security-fetch-NVCN message before sending a message to the secure-controller. 
 The NVCN is incremented by the secure-controller after every [security-fetch-NVCN message](#631-security-fetch-NVCN). 
 
-``` puml
-
+```plantuml
+@startuml
 caption Message Processing Sequence Diagram
 
 skinparam monochrome true
@@ -393,6 +351,7 @@ server -> server : Execute command
 
 server --> client : Send response
 
+@enduml
 ```
 
 ## 6. REST Message Types

@@ -13,7 +13,7 @@ ScpResponseFactory::ScpResponseFactory()
 {
 }
 
-// ====== Control Repsonses ======
+// ====== Control Repsonse ======
 String ScpResponseFactory::createResponseControl(String deviceID, String action, String result)
 {
     String response = "{ \"type\" : \"control\",";
@@ -24,11 +24,14 @@ String ScpResponseFactory::createResponseControl(String deviceID, String action,
     return response;
 }
 
-String ScpResponseFactory::createResponseControlStatus(String deviceID, String status)
+// ====== Measure Repsonse ======
+String ScpResponseFactory::createResponseMeasure(String deviceID, String action, double value, String result)
 {
-    String response = "{ \"type\" : \"control-status\",";
+    String response = "{ \"type\" : \"measure\",";
+    response +="\"action\" :  \"" + action + "\",";
     response +="\"deviceId\" : \"" + deviceID + "\",";
-    response += "\"status\" : \"" + status + "\"";
+    response += "\"value\" : \"" + String(value) + "\",";
+    response += "\"result\" : \"" + result + "\"";
     response += "}";
     return response;
 }

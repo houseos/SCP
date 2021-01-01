@@ -45,6 +45,7 @@ public:
   void handleClient();
 
   void registerControlFunction(std::function<void(String)> fun);
+  void registerMeasureFunction(std::function<double(String)> fun);
 
 private:
   ScpPassword scpPassword;
@@ -61,6 +62,7 @@ private:
   String DEFAULT_PW = "1234567890123456";
 
   std::function<void(String)> controlFunction;
+  std::function<double(String)> measureFunction;
 
   // Helpers
   bool isDeviceIdValid(String devId);

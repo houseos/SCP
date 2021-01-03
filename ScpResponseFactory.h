@@ -40,13 +40,14 @@ public:
   String createResponseControl(String deviceID, String action, String result);
 
   /**
-   * @brief Create a Response Control Status string
+   * @brief Create a Response Measure string
    * 
    * @param deviceID 
-   * @param status 
+   * @param value 
+   * @param result
    * @return String 
    */
-  String createResponseControlStatus(String deviceID, String status);
+  String createResponseMeasure(String deviceID, String action, double value, String result);
 
   // ====== Security Responses ======
 

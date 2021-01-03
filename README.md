@@ -69,7 +69,7 @@ void loop(void)
 
 ## License
 
-SPDX-License-Identifier: GPL-3. 0-or-later
+SPDX-License-Identifier: GPL-3.0-or-later
 
 The full version of the license can be found in LICENSE. 
 
@@ -78,4 +78,4 @@ The full version of the license can be found in LICENSE.
 If you need a license for commercial use, please contact [Benjamin Schilling](mailto:schilling.benjamin@delusionsoftware.de). 
 
 ## Copyright
-Copyright (C) 2018 - 2020 Benjamin Schilling
+Copyright (C) 2018 - 2021 Benjamin Schilling

@@ -45,6 +45,7 @@ public:
   void handleClient();
 
   void registerControlFunction(std::function<void(String)> fun);
+  void registerMeasureFunction(std::function<double(String)> fun);
 
 private:
   ScpPassword scpPassword;
@@ -64,6 +65,7 @@ private:
   char *actions[];
 
   std::function<void(String)> controlFunction;
+  std::function<double(String)> measureFunction;
 
   // Helpers
   bool isDeviceIdValid(String devId);

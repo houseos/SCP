@@ -4,12 +4,13 @@
 
 The following terms and abbreviations are used in this document. 
 
-| Term     | Description                             |
-| -------- | --------------------------------------- |
-| ESP8266  | Cheap Wifi Microcontroller by espressif |
-| ChaCha20 | Symmetric Cryptography Cipher           |
-| Poly1305 | Cryptographic MAC                       |
-|          |                                         |
+| Term           | Description                                     |
+| -------------- | ----------------------------------------------- |
+| ESP8266        | Cheap Wifi Microcontroller by espressif         |
+| ChaCha20       | Symmetric Cryptography Cipher                   |
+| Poly1305       | Cryptographic MAC                               |
+| Control Device | Device implementing the Secure Control Protocol |
+| Client Device  | Device sending commands to a Control Device     |
 
 | Abbreviation | Description                                   |
 | ------------ | --------------------------------------------- |
@@ -20,18 +21,19 @@ The following terms and abbreviations are used in this document.
 | Nonce        | Number-used-once                              |
 | HMAC         | Keyed-Hash Message Authenitcation Code        |
 | NVCN         | Next valid control number                     |
+| DHCP         | Dynamic Host Configuration Protocol           |
 
-## 0. About
+## 1 About
 
-### 0. 1 Purpose
+### 1.1 Purpose
 
 The purpose of the Secure Control Protocol is to enable makers to develop home automation devices based on the ESP8266 with minimum effort while providing a substantial level of security compared to other solutions. 
 
-### 0. 2 Goal
+### 1.2 Goal
 
 The goal is to provide a ready to use protocol and server where the user only has to register his own functions without a special need for configuration of the server. 
 
-## 1. Architecture
+## 2. Architecture
 
 ```plantuml
 @startuml
@@ -48,7 +50,7 @@ package "Client Device" {
         SCP client
     ]
 
-    artifact storage [
+    component storage [
         <<component>>
         Storage
     ]
@@ -57,9 +59,12 @@ package "Client Device" {
         <<component>>
         GUI
     ]
+        
+    gui ..> client : <<library>>
+    client .up.> storage : Store passwords 
 }
 
-package "Embedded Device" {
+package "Control Device" {
     component server [
         <<component>>
         SCP Server
@@ -69,38 +74,31 @@ package "Embedded Device" {
         <<component>>
         Application Logic
     ]
+
+    app ..> server : <<library>>
 }
 
-() "/secure-control" as epSc
-
-() "/secure-control-discover-hello" as epScDh
-
-() "/secure-control-security-fetch-NVCN" as epScSfi
-
-server -- epSc
-server -- epScDh
-server -- epScSfi
-
-client --> epSc : use
-client --> epScDh : use
-client --> epScSfi : use
-
-app ..> server : <<library>>
-
-gui ..> client : <<library>>
-
-client ..> storage : Store passwords 
+client -(0- server: /secure-control
+client -(0- server: /secure-control-discover-hello
 
 @enduml
 ```
 
-The SCP webserver on the device is running on port 18215 which reflects the numbers of the letters, S (19), C (3) and P (16) in the alphabet.
+The control device typically is **ESP8266** based embedded system that is attached to an actor or a sensor.
+It consists of the **Application Logic** for interfacing with the attached actor or sensor and the **SCP Server**.
+The **SCP Server** is a webserver serving two *HTTP* ressources.
+The `/secure-control-discover-hello` ressource responds with general information about the device that is only protected with an **HMAC**. 
+The `/secure-control` ressource is used for all other actions.
+Requests for this ressource have to contain certain encrypted query parameters.
+The parameters are protected by an **HMAC**.
 
-## 2. Provisioning of devices
+The **SCP** webserver on the device is running on *TCP* port 19316 which reflects the numbers of the letters, S (19), C (3) and P (16) in the alphabet.
+
+### 2.1 Provisioning of devices
 
 When the default password of the secure-controller is set or no Wifi credentials are provisioned the secure-controller provides a Wifi Access Point using WPA2-PSK which can be accessed with the [default credentials from the annex](#81-default-credentials). 
 
-When the Wifi Access Point is available the client connects to the Wifi and the secure-controller acts as a DHCP server and provides an IP address from a small Class C IP subnet. 
+When the Wifi Access Point is available the client connects to the Wifi and the secure-controller acts as a **DHCP** server and provides an IP address from a small Class C IP subnet. 
 
 Now the client can start the discovery of secure-controllers in the IP subnet. 
 If the secure-controller is found a new password must be set. 
@@ -125,8 +123,8 @@ skinparam monochrome true
 scale max 650 width
 
 Actor ":User" as user
-participant ":SCP Client" as client
-participant ":SCP Server " as server
+participant ":Client Device" as client
+participant ":Control Device" as server
 note right of server
     default password set,
     no wifi access available
@@ -144,11 +142,11 @@ client -> server : Connect to wifi
 
 server --> client : Assign IP address
 
-client -> server : Get device information from /secure-control/discover-hello
+client -> server : Get device information from /secure-control-discover-hello
 
 server --> client : Send discover-response
 
-client -> server : Get NVCN from /secure-control/security-fetch-iv
+client -> server : Get NVCN from /secure-control
 
 server -> server : Generate new NVCN
 
@@ -162,7 +160,7 @@ server --> client : Respond with result
 
 user -> client : Enter WiFi credentials
 
-client -> server : Get NVCN from /secure-control/security-fetch-ncvn
+client -> server : Get NVCN from /secure-control
 
 server -> server : Generate new NVCN
 
@@ -176,7 +174,7 @@ server --> client : Respond with result
 
 user -> client : Trigger device restart
 
-client -> server : Get NVCN from /secure-control/security-fetch-nvcn
+client -> server : Get NVCN from /secure-control
 
 server -> server : Generate new NVCN
 
@@ -195,11 +193,11 @@ end note
 @enduml
 ```
 
-## 3. Discovery of devices
+### 2.2 Discovery of devices
 
-The SCP Client acts as a managing device and is capable of discovering devices in the local subnet network range. 
+The **Client Device** acts as a managing device and is capable of discovering devices in the local subnet network range. 
 
-To do this the client connects to the secure-control-discover-hello ressource of each IP addresses of the configured IP address range. 
+To do this the client requests the secure-control-discover-hello ressource of each IP addresses of the configured IP address range. 
 
 The client stores the IP addresses of all devices which respond with a HTTP response 200 OK with information in the body. 
 
@@ -211,13 +209,13 @@ skinparam monochrome true
 
 scale max 650 width
 
-participant ":SCP Server 1" as server1
-participant ":SCP Server 2" as server2
+participant ":Control Device 1" as server1
+participant ":Control Device 2" as server2
 participant ":Other Webserver" as webserver
 participant ":Device w/o webserver" as device
-participant ":SCP Client" as client
+participant ":Client Device" as client
 
-client -> client : Get WiFi IP address & subnet mask
+client -> client : Get IP address & subnet mask
 client -> client : Get network address
 
 client -> server1 : Connect to /secure-control-discover-hello ressource
@@ -235,19 +233,19 @@ webserver --> client : Respond with HTTP 404 Not found
 @enduml
 ```
 
-## 4. Security
+### 2.3 Security
 
 The security is based on pre-shared secrets. 
-Each device has its own secret. 
-The secret is only shared between the secure-controller and the client device(s). 
+Each **Control Device** has its own secret. 
+The secret is only shared between the **Control Device** and the **Client Device(s)**. 
 
-Each secure-controller has a preconfigured secret which has to be changed when the secure-controller is first controlled. 
-The secure-controller does __not__ accept any [control messages](#62-control-messages) or [security messages](#63-security-messages) (besides the [security-pw-change message](#632-security-pw-change)) if the current secure-controller secret matches the [default password from the annex](#811-default-device-password). 
+Each **Control Device** has a preconfigured secret which has to be changed when the **Control Device** is first controlled. 
+The **Control Device** does **not** accept any [control messages](#62-control-messages) or [security messages](#63-security-messages) (besides the [security-pw-change message](#632-security-pw-change)) if the current **Control Device** secret matches the [default password from the annex](#811-default-device-password). 
 
 The secret has to be 32 characters long. 
 The length is given by the ChaCha20 encryption algorithm. 
 The secret will usually not be used by a human user since the whole provisioning is an automated process. 
-The secret is set by the client device and stored in the secure-controller. 
+The secret is set by the client device and stored in the **Control Device**. 
 Therefore the length limitation does not pose a usability problem. 
 
 All (except for [6. 1. 1 discover-hello](#611-discover-hello)) messages send by control devices are encrypted. 
@@ -274,7 +272,7 @@ The salt in the payload is used to strengthen the encryption by reducing the pos
 
 The discover-hello request is unencrypted. 
 
-All responses are not encrypted but protected with a SHA512 HMAC using the device password as key.
+All responses are not encrypted but protected with a **SHA512** **HMAC** using the device password as key.
 
 ```json
 {
@@ -283,11 +281,11 @@ All responses are not encrypted but protected with a SHA512 HMAC using the devic
 }
 ```
 
-After checking that the returned JSON only contains the **response** and **hmac** fields and the HMAC check of the response was successful, the response may be decoded.
+After checking that the returned **JSON** only contains the **response** and **hmac** fields and the **HMAC** check of the response was successful, the response may be decoded.
 
 The resulting string depends on the request and is described in the individual chapter of the request below.
 
-### 4. 1 Storage of Wifi Credentials on the device
+### 2.4 Storage of Wifi Credentials on the device
 
 To protect the Wifi credentials on the device, they are encrypted using a hardware based key derivation function. 
 
@@ -298,7 +296,7 @@ The flash memory of the secure-controller stores the secure-controller password 
 This attack is considered to be unlikely and of limited use only since every device has a separate password. 
 Nevertheless any ideas / comments on this issue are very welcome. 
 
-## 5. HTTP Ressources
+### 2.5 HTTP Ressources
 
 The device exposes the following HTTP ressources:
 
@@ -310,11 +308,11 @@ http://device-ip/secure-control
 http://device-ip/secure-control/discover-hello
 ```
 
-### 5. 1 Typical message flow
+### 2.6 Typical message flow
 
-The NVCN used for replay protection is randomly generated on secure-controller start-up. 
+The **NVCN** used for replay protection is randomly generated on secure-controller start-up. 
 It is being fetched from the control device by using the security-fetch-NVCN message before sending a message to the secure-controller. 
-The NVCN is incremented by the secure-controller after every [security-fetch-NVCN message](#631-security-fetch-NVCN). 
+The **NVCN** is incremented by the secure-controller after every [security-fetch-NVCN message](#631-security-fetch-NVCN). 
 
 ```plantuml
 @startuml
@@ -324,8 +322,8 @@ skinparam monochrome true
 
 scale 650 width
 
-participant ":SCP client" as client
-participant ":SCP server" as server
+participant ":Client Device" as client
+participant ":Control Device" as server
 
 client -> server : Get NVCN from /secure-control
 
@@ -354,9 +352,9 @@ server --> client : Send response
 @enduml
 ```
 
-## 6. REST Message Types
+### 2.7 REST Message Types
 
-The secure-controller waits for HTTP-GET messages with the Content-Type application/x-www-form-urlencoded. 
+The secure-controller waits for *HTTP-GET* messages with the Content-Type *application/x-www-form-urlencoded*. 
 
 Almost all messages are encrypted, see [security chapter](#4-security) for details on the algorithms and exceptions. 
 
@@ -389,7 +387,7 @@ payload = urlencode(base64(encrypted_message))
 
 The encrypted message consists of the data described in Chapter 4. 
 
-All messages except for the discover-hello message, respond with a HTTP 200 OK message containing a JSON object with the following elements:
+All messages except for the discover-hello message, respond with a HTTP 200 OK message containing a **JSON** object with the following elements:
 
 | Key     | Possible values      |
 | ------- | -------------------- |
@@ -405,20 +403,18 @@ All messages except for the discover-hello message, respond with a HTTP 200 OK m
 }
 ``` 
 
-### 6.1 Discover message types
-
-#### 6.1.1 discover-hello
+#### 2.7.1 discover-hello message
 ```
 Ressource: http://device-ip/secure-control/discover-hello?payload=discover-hello
 ``` 
 
 The discover-hello message is sent to all IP addresses of the home network subnet to determine which IP addresses belongs to a secure-controller. 
 It is the only message being sent without encryption. 
-If the device is a secure-controller it responds with a HTTP 200 OK message containing a JSON representation of the following information.
+If the device is a secure-controller it responds with a HTTP 200 OK message containing a **JSON** representation of the following information.
 
-The configured password of the device is used as the key in the HMAC calculation.
+The configured password of the device is used as the key in the **HMAC** calculation.
 
-The HMAC is calculated as follows:
+The **HMAC** is calculated as follows:
 ```
 hmac = SHA512_HMAC("discover-response" + device ID + device Type + IP Address
                     + current password number, device password)
@@ -444,11 +440,11 @@ Example:
 }
 ``` 
 
-### 6.3 Security messages
+#### 2.7.2 Security messages
 
-#### 6.3.1 security-fetch-nvcn
+##### 2.7.2.1 security-fetch-nvcn
 
-The security-fetch-nvcn message fetches the NVCN from the device.
+The security-fetch-nvcn message fetches the **NVCN** from the device.
 
 The device ID provided in the payload must match the configured device ID.
 
@@ -456,7 +452,7 @@ The request payload is created according to [REST message types and encoding]
 (#6-rest-message-types) using:
 `plain text = <salt> + ":" + "security-fetch-nvcn" + ":" + <device ID>`
 
-The response payload is a JSON representation of the following data:
+The response payload is a **JSON** representation of the following data:
 
 | Key      | Possible values           |
 | -------- | ------------------------- |
@@ -473,7 +469,7 @@ Example:
 }
 ``` 
 
-#### 6.3.2 security-pw-change
+##### 2.7.2.2 security-pw-change
 
 The security-pw-change message tells the device to change it's old password to the new one.
 
@@ -484,7 +480,7 @@ Additionally the deviceID provided in the payload must match the configured devi
 Hint:
 The old password does not has to be send because it is used by the device for the encryption of the message.
 
-The response payload is a JSON representation of the following data:
+The response payload is a **JSON** representation of the following data:
 
 | Key      | Possible values    |
 | -------- | ------------------ |
@@ -504,7 +500,7 @@ Example:
 
 ``` 
 
-#### 6.3.3 security-wifi-config
+##### 2.7.2.3 security-wifi-config
 
 The security-wifi-change message tells the device to set the Wifi client credentials it should use to access the target network.
 
@@ -512,7 +508,7 @@ Additionally the deviceID provided in the payload must match the configured devi
 
 `plain text = <salt> + ":" + "security-wifi-config" + ":" + <device ID> + ":" + <NVCN> + ":" + <ssid> + ":" + <pre-shared-key>`
 
-The response payload is a JSON representation of the following data:
+The response payload is a **JSON** representation of the following data:
 
 | Key      | Possible values          |
 | -------- | ------------------------ |
@@ -530,7 +526,7 @@ Example:
 }
 ``` 
 
-#### 6.3.4 security-reset-to-default
+##### 2.7.2.4 security-reset-to-default
 
 The security-reset-to-default message tells the device to reset all persistent changes 
 to the factory default settings, e.g. the password.
@@ -540,7 +536,7 @@ to the factory default settings, e.g. the password.
 
 `plain text = <salt> + ":" + "security-reset-to-default" + ":" + <device ID> + ":" + <NVCN>`
 
-The response payload is a JSON representation of the following data:
+The response payload is a **JSON** representation of the following data:
 
 | Key      | Possible values           |
 | -------- | ------------------------- |
@@ -556,13 +552,13 @@ Example:
 }
 ``` 
 
-#### 6.3.5 security-restart
+##### 2.7.2.5 security-restart
 
 The security-restart message tells the device to apply a new configuration by restarting.
 
 `plain text = <salt> + ":" + "security-restart" + ":" + <device ID> + ":" + <NVCN>`
 
-The response payload is a JSON representation of the following data:
+The response payload is a **JSON** representation of the following data:
 
 | Key      | Possible values  |
 | -------- | ---------------- |
@@ -579,20 +575,20 @@ Example:
 }
 ``` 
 
-### 6.2 Control messages
+#### 2.7.3 I/O messages
 
-#### 6.2.1 control
+##### 2.7.3.1 control
 
 The control message tells the secure-controller to act according to the action.
 
 The deviceID provided in the payload must match the configured device ID.
 
-The NVCN provided in the payload must match (current_controller_NVCN - 1).
+The **NVCN** provided in the payload must match (current_controller_NVCN - 1).
 
 The encoded_data payload is created according to [REST message types and encoding](#6-rest-message-types) using:
-message_type=control
+`plain text = <salt> + ":" + "control" + ":" + <device ID> + ":" + <action>`
 
-The response payload is a JSON representation of the following data:
+The response payload is a **JSON** representation of the following data:
 
 | Key      | Possible values  |
 | -------- | ---------------- |
@@ -605,8 +601,8 @@ Example:
 {
     "type" : "control",
     "deviceId" : "<device ID>",
-    "action" : "<defines by user",
-    "result" : "success or error>",
+    "action" : "<defined by user>",
+    "result" : "<success or error>",
 }
 ``` 
 The result values have the following meaning:
@@ -616,18 +612,18 @@ The result values have the following meaning:
 | "success" | the action was executed successfully |
 | "error"   | some error occured                   |
 
-#### 6.2.4 control-status
+##### 2.7.3.2 measure
 
-The control-status message returns the current status of the secure-controller to the control device.
+The measure message tells the device to measure something and return the measured value to the client.
 
 The deviceID provided in the payload must match the configured device ID.
 
-The NVCN provided in the payload must match (current_controller_NVCN - 1).
+The **NVCN** provided in the payload must match (current_controller_NVCN - 1).
 
 The encoded_data payload is created according to [REST message types and encoding](#6-rest-message-types) using:
-message_type=control-status
+`plain text = <salt> + ":" + "measure" + ":" + <device ID> + ":" + <action>`
 
-The payload of the response consists of a JSON representation of the following data:
+The payload of the response consists of a **JSON** representation of the following data:
 
 | Key      | Possible values |
 | -------- | --------------- |
@@ -637,35 +633,36 @@ The payload of the response consists of a JSON representation of the following d
 
 Example:
 ```json
-
 {
-    "type" : "control-status",
+    "type" : "measure",
     "deviceId" : "<device ID>",
-    "status" : "defined by user"
+    "action" : "<defined by user>",
+    "value" : "<defined by user>",
+    "result" : "<success or error>",
 }
-
 ```
 
-## 8. Annex
 
-### 8. 1 Default credentials
+## 3. Annex
 
-#### 8. 1. 1 Default device password
+### 3.1 Default credentials
+
+#### 3.1.1 Default device password
 
 Every device password is 32 characters long. 
 The default device password is 01234567890123456789012345678901. 
 
-#### 8. 1. 2 Default Wifi Access Point credentials
+#### 3.1.2 Default Wifi Access Point credentials
 
 SSID: "scp-controller-" + MAC Address
 
 Pre-Shared-Key: 1234567890123456
 
-### 8. 2 ESP8266 EEPROM Layout
+### 3.2 ESP8266 EEPROM Layout
 
 The ESP8266 comes with 512 Bytes of EEPROM storage. 
 
-#### 8. 3 Flags
+#### 3.3 Flags
 
 Bytes 0
 
@@ -673,23 +670,23 @@ Bytes 0
 | --- | ---- | ---- | ---- | ---- | ---- | -------------------- | --------- | -------------- |
 | 0   | res. | res. | res. | res. | res. | Wifi Credentials Set | DevID Set | Default Pw Set |
 
-##### 8. 4 Device Password
+##### 3.4 Device Password
 
 Bytes 1 - 33
 
-##### 8. 5 Current Password Number
+##### 3.5 Current Password Number
 
 Bytes 34 - 66
 
-##### 8. 6 Device ID
+##### 3.6 Device ID
 
 Bytes 67 - 83
 
-##### 8. 7 WIFI SSID
+##### 3.7 WIFI SSID
 
 Bytes 84 - 115
 
-##### 8. 8 WIFI Password
+##### 3.8 WIFI Password
 
 Bytes 116 - 148
 
@@ -699,24 +696,24 @@ To enhance the security of the project and devices using the protocol the projec
 
 ## Versions
 
-### 0. 0. 2
+### 0.0.2
 
 Changed from AES-128 CBC to ChaCha20 Poly1305 because it is natively supported by the ESP8266 SDK and comes with AEAD. 
 Therefore changed the default password from 16 characters to 32 characters and reworked the whole concept. 
 
-### 0. 0. 1
+### 0.0.1
 
 Initial version
 
 ## License
 
-SPDX-License-Identifier: GPL-3. 0-or-later
+SPDX-License-Identifier: GPL-3.0-or-later
 
 The full version of the license can be found in LICENSE. 
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FbenjaminSchilling33%2Fsecure-control-protocol.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FbenjaminSchilling33%2Fsecure-control-protocol?ref=badge_large)
 
-If you need a license for commercial use, please contact [Benjamin Schilling](mailto:schilling. benjamin@delusionsoftware. de). 
+If you need a license for commercial use, please contact [Benjamin Schilling](mailto:schilling.benjamin@delusionsoftware.de). 
 
 ## Copyright
-Copyright (C) 2018 - 2020 Benjamin Schilling
+Copyright (C) 2018 - 2021 Benjamin Schilling

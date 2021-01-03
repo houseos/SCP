@@ -14,8 +14,8 @@ Copyright (C) 2018 Benjamin Schilling
 #include <WiFiClient.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266WebServer.h>
-
 #include "ScpDeviceID.h"
+#include "ScpDeviceName.h"
 #include "ScpPassword.h"
 #include "ScpCrypto.h"
 #include "ScpResponseFactory.h"
@@ -36,7 +36,7 @@ public:
    * @brief 
    * 
    */
-  void init(String deviceType);
+  void init(String deviceType, uint8_t numberOfActions, char *actions[]);
 
   /**
    * @brief 
@@ -49,6 +49,7 @@ public:
 private:
   ScpPassword scpPassword;
   ScpDeviceID scpDeviceID;
+  ScpDeviceName scpDeviceName;
   ScpCrypto scpCrypto;
   ScpResponseFactory scpResponseFactory;
   ScpEepromController scpEepromController;

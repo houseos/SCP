@@ -216,7 +216,7 @@ void SCP::handleDiscoverHello()
     if (payload.equals("discover-hello"))
     {
         String currentPasswordNumber = String(scpPassword.readCurrentPasswordNumber());
-        String answer = scpResponseFactory.createResponseDiscoverHello(deviceID, deviceType, currentPasswordNumber);
+        String answer = scpResponseFactory.createResponseDiscoverHello(deviceID, deviceType, scpDeviceName.readDeviceName(), numberOfActions, actions, currentPasswordNumber);
         server->send(200, "application/json", answer);
 
         scpDebug.println(scpDebug.base, "  SCP.handleDiscoverHello:  discover-response send: " + answer);

@@ -1,6 +1,6 @@
 /*
 secure-control-protocol
-This is the header file for the ScpEepromController class.
+This is the source file for the ScpEepromController class.
 
 SPDX-License-Identifier: GPL-3.0-or-later
 

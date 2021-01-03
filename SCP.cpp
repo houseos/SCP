@@ -117,16 +117,20 @@ void SCP::handleSecureControl()
             scpDebug.println(scpDebug.base, "  SCP.handleSecureControl:  security-wifi-config: preSharedKey: " + preSharedKey);
 
             //try to connect to wifi
-            //wifiMulti.addAP(ssid.c_str(), preSharedKey.c_str());
             wifiMulti.addAP(ssid.c_str(), preSharedKey.c_str());
-            uint8_t tries = 1;
-            while (wifiMulti.run() != WL_CONNECTED && tries <= 5)
+            for (uint8_t tries = 0; tries < 40; tries++)
             {
-                Serial.print("Try to connect to Wifi, try: ");
-                Serial.print(tries);
-                Serial.println("/5");
-                tries++;
-                delay(2000);
+                if (wifiMulti.run() != WL_CONNECTED)
+                {
+                    Serial.print("Try to connect to Wifi, try: ");
+                    Serial.print(tries);
+                    Serial.println("/40");
+                    delay(1000);
+                }
+                else
+                {
+                    break;
+                }
             }
             String answer = "";
             if (wifiMulti.run() == WL_CONNECTED)
@@ -180,6 +184,16 @@ void SCP::handleSecureControl()
             String answer = scpResponseFactory.createResponseControl(this->deviceID, action, "success");
             String hmacAnswer = scpResponseFactory.createHmacResponse(answer);
             scpDebug.println(scpDebug.base, "  SCP.handleSecureControl:  control response: " + hmacAnswer);
+            server->send(200, "application/json", hmacAnswer);
+            return;
+        } else if (messageType == "measure")
+        {
+            Serial.println("received measure");
+            String action = remaining.substring(0, remaining.indexOf(":"));
+            double measureValue = measureFunction(action);
+            String answer = scpResponseFactory.createResponseMeasure(this->deviceID, action, measureValue, "success");
+            String hmacAnswer = scpResponseFactory.createHmacResponse(answer);
+            scpDebug.println(scpDebug.base, "  SCP.handleSecureControl:  measure response: " + hmacAnswer);
             server->send(200, "application/json", hmacAnswer);
             return;
         }
@@ -362,6 +376,10 @@ void SCP::init(String deviceType)
 void SCP::registerControlFunction(std::function<void(String)> fun)
 {
     controlFunction = fun;
+}
+void SCP::registerMeasureFunction(std::function<double(String)> fun)
+{
+    measureFunction = fun;
 }
 
 bool SCP::isDeviceIdValid(String devId)

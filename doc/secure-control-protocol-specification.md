@@ -432,7 +432,8 @@ hmac = SHA512_HMAC("discover-response" + device ID + device Type + IP Address
 | deviceId              | device ID (16 byte)                      |
 | deviceName            | device name                              |
 | deviceType            | device type                              |
-| action                | array of supported action                |
+| controlActions        | array of supported control actions       |
+| measureActions        | array of supported measure actions       |
 | currentPasswordNumber | number of password changes, 0 is default |
 | hmac                  | Keyed-Hashed Massage Authentication Code |
 Example:
@@ -442,7 +443,11 @@ Example:
     "deviceId" : "device ID",
     "deviceName" : "device Name",
     "deviceType" : "secure-controller",
-    "actions": [
+    "controlActions": [
+        "<action 1>",
+        "<action 2>"
+    ],
+    "measureActions": [
         "<action 1>",
         "<action 2>"
     ],

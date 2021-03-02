@@ -35,8 +35,10 @@ public:
   /**
    * @brief 
    * 
+   * @param deviceType The type of device
+   * @param actions String containing a list of ',' separated actions
    */
-  void init(String deviceType, uint8_t numberOfActions, char *actions[]);
+  void init(String deviceType, String controlActions, String measureActions);
 
   /**
    * @brief 
@@ -60,8 +62,9 @@ private:
   ESP8266WebServer *server;
   ESP8266WiFiMulti wifiMulti;
   String DEFAULT_PW = "1234567890123456";
-  uint8_t numberOfActions;
-  char *actions[];
+  // List of supported actions, separated by ','
+  String measureActions;
+  String controlActions;
 
   std::function<void(String)> controlFunction;
 

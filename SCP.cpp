@@ -18,6 +18,9 @@ SCP::SCP()
     EEPROM.begin(512);
 }
 
+/*
+ * Handle all requests on the /secure-control endpoint
+ */
 void SCP::handleSecureControl()
 {
     scpDebug.println(scpDebug.base, "  SCP.handleSecureControl: handleClient");
@@ -204,6 +207,9 @@ void SCP::handleSecureControl()
     sendMalformedPayload();
 }
 
+/*
+ * Handle all requests on the /secure-control-discover endpoint
+ */
 void SCP::handleDiscoverHello()
 {
     scpDebug.println(scpDebug.base, "  SCP.handleDiscoverHello: Message: DiscoverHello");
@@ -216,7 +222,7 @@ void SCP::handleDiscoverHello()
     if (payload.equals("discover-hello"))
     {
         String currentPasswordNumber = String(scpPassword.readCurrentPasswordNumber());
-        String answer = scpResponseFactory.createResponseDiscoverHello(deviceID, deviceType, scpDeviceName.readDeviceName(), numberOfActions, actions, currentPasswordNumber);
+        String answer = scpResponseFactory.createResponseDiscoverHello(deviceID, deviceType, scpDeviceName.readDeviceName(), controlActions, measureActions, currentPasswordNumber);
         server->send(200, "application/json", answer);
 
         scpDebug.println(scpDebug.base, "  SCP.handleDiscoverHello:  discover-response send: " + answer);
@@ -229,6 +235,7 @@ void SCP::handleDiscoverHello()
     scpDebug.println(scpDebug.base, "  SCP.handleDiscoverHello:  Message End: DiscoverHello");
 }
 
+// Respond with an error when a malformed payload is detected
 void SCP::sendMalformedPayload()
 {
     scpDebug.println(scpDebug.base, "    Error: MalformedPayload");
@@ -244,6 +251,7 @@ void SCP::sendMalformedPayload()
     scpDebug.println(scpDebug.base, "    Error End: MalformedPayload");
 }
 
+// Respond to unknown endpoints
 void SCP::handleNotFound()
 {
     scpDebug.println(scpDebug.base, "    Error: HandleNotFound");
@@ -263,8 +271,10 @@ void SCP::handleNotFound()
     scpDebug.println(scpDebug.base, "    Error End: HandleNotFound");
 }
 
+// Wrapper function for the server
 void SCP::handleClient() { server->handleClient(); }
 
+// Set the device to provisioning mode
 void SCP::provisioningMode()
 {
     // Get wifi ssid
@@ -286,6 +296,7 @@ void SCP::provisioningMode()
     scpDebug.println(scpDebug.base, password);
 }
 
+// Set the device to control mode
 void SCP::controlMode()
 {
     String wifiSSID = scpEepromController.getWifiSSID();
@@ -318,14 +329,17 @@ void SCP::controlMode()
     scpDebug.println(scpDebug.base, ipAddress);
 }
 
-void SCP::init(String deviceType, uint8_t numberOfActions, char *actions[])
+/* 
+ * Initialize the library
+ */
+void SCP::init(String deviceType, String controlActions, String measureActions)
 {
     // Set the device type
     this->deviceType = deviceType;
 
     // Set the supported actions
-    this->numberOfActions = numberOfActions;
-    this->actions = actions;
+    this->controlActions = controlActions;
+    this->measureActions = measureActions;
 
     // If the default password was not set, set it now
     if (!scpPassword.isDefaultPasswordSetOnce())
@@ -375,11 +389,18 @@ void SCP::init(String deviceType, uint8_t numberOfActions, char *actions[])
     scpDebug.println(scpDebug.base, "  SCP.init: SCP initialized");
 }
 
+/*
+ *
+ */
 void SCP::registerControlFunction(std::function<void(String)> fun)
 {
     controlFunction = fun;
 }
 
+/*
+ * Check whether a supplied device ID matches
+ * the deviceId of the device
+ */
 bool SCP::isDeviceIdValid(String devId)
 {
     if (devId.equals(this->deviceID))
@@ -392,6 +413,10 @@ bool SCP::isDeviceIdValid(String devId)
     }
 }
 
+/*
+ * Check whether a supplied NVCN
+ * the NVCN of the device
+ */
 bool SCP::isNVCNValid(String nvcn)
 {
     if (scpCrypto.checkNVCN(nvcn))

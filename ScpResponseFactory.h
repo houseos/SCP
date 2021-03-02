@@ -113,13 +113,13 @@ public:
    * @param deviceID 
    * @param deviceType 
    * @param deviceName 
-   * @param numberOfActions 
-   * @param actions 
+   * @param controlActions 
+   * @param measureActions 
    * @param defaultPWresult 
    * @param hmac 
    * @return String 
    */
-  String createResponseDiscoverHello(String deviceID, String deviceType, String deviceName, uint8_t numberOfActions, char *actions[], String currentPasswordNumber);
+  String createResponseDiscoverHello(String deviceID, String deviceType, String deviceName, String controlActions, String measureActions, String currentPasswordNumber);
 
   // ====== HMAC SHA512 Responses ======
   /**

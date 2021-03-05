@@ -195,7 +195,8 @@ void SCP::handleSecureControl()
             scpDebug.println(scpDebug.base, "SCP.handleSecureControl:  control response: " + hmacAnswer);
             server->send(200, "application/json", hmacAnswer);
             return;
-        } else if (messageType == "measure")
+        }
+        else if (messageType == "measure")
         {
             scpDebug.println(scpDebug.base, "SCP.handleSecureControl: received measure");
             String action = remaining.substring(0, remaining.indexOf(":"));

@@ -115,12 +115,14 @@ String ScpResponseFactory::createResponseDiscoverHello(String deviceID, String d
     response += "\"deviceId\":\"" + deviceID + "\",";
     response += "\"deviceType\":\"" + deviceType + "\",";
     response += "\"deviceName\":\"" + deviceName + "\",";
-    if (controlActions != "") {
+    if (controlActions != "")
+    {
         response += "\"controlActions\": [";
         response += controlActions;
         response += "],";
     }
-    if (measureActions != "") {
+    if (measureActions != "")
+    {
         response += "\"measureActions\": [";
         response += measureActions;
         response += "],";

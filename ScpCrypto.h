@@ -73,8 +73,8 @@ public:
    * 
    * @returns String The encrypted and encoded message on success, empty string on error
    */
-  String encryptAndEncode(String payload, int* payloadLength,
-                        String key, String *base64Nonce, String *base64Mac);
+  String encryptAndEncode(String payload, int *payloadLength,
+                          String key, String *base64Nonce, String *base64Mac);
 
   /**
   * @brief Generates a SHA512 HMAC for the given payload

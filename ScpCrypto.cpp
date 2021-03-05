@@ -77,7 +77,7 @@ String ScpCrypto::getNVCN()
 
 bool ScpCrypto::checkNVCN(String nvcn)
 {
-  
+
   scpDebug.println(scpDebug.crypto, "ScpCrypto::checkNVCN: Expected NVCN: " + String(currentNvcn) + "Received NVCN: " + String(nvcn));
   if (currentNvcn == nvcn.toInt())
   {

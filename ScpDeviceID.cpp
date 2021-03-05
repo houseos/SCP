@@ -9,12 +9,13 @@ Copyright (C) 2018 Benjamin Schilling
 
 #include "ScpDeviceID.h"
 
-ScpDeviceID::ScpDeviceID() {
+ScpDeviceID::ScpDeviceID()
+{
 }
 
 String ScpDeviceID::readDeviceID()
 {
-return scpEeprom.getDeviceId();
+  return scpEeprom.getDeviceId();
 }
 
 void ScpDeviceID::setDeviceID()
@@ -46,10 +47,9 @@ void ScpDeviceID::setDeviceID()
   deviceID = readDeviceID();
   scpDebug.println(scpDebug.deviceId, "ScpDeviceID:setDeviceID:  DeviceID: " + deviceID);
 #endif
-
 }
 
 bool ScpDeviceID::isDeviceIDSet()
 {
- return scpEeprom.isDeviceIdSet();
+  return scpEeprom.isDeviceIdSet();
 }

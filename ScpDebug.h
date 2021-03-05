@@ -25,7 +25,8 @@ public:
         deviceId = 3,
         eeprom = 4,
         messageFactory = 5,
-        password = 6
+        password = 6,
+        deviceName = 7
     };
 
     ScpDebug();

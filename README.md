@@ -36,9 +36,13 @@ void setup(void)
   Serial.println("");
 
 // Initialize the SCP object
-  scp.init("shutter-control");
-// Register your control function.
+// First parameter is the device type
+// Second parameters contains all control actions
+// Third parameter contains all measure actions (in this case: none)
+  scp.init("shutter-control", "\"up\",\"down\",\"stop\"", "");
+// Register your control functions.
   scp.registerControlFunction(std::bind(control, _1));
+  scp.registerMeasureFunction(std::bind(measure, _1));
 }
 
 // In the control function define all supported actions, 
@@ -57,6 +61,11 @@ void control(String action){
     digitalWrite(D5, 0);
     digitalWrite(D6, 0); 
   }
+}
+
+
+double measure(String action){
+  Serial.println("No measure action available.");
 }
 
 void loop(void)

@@ -92,6 +92,7 @@ public:
   bool checkNVCN(String nvcn);
 
 private:
+  ScpDebug scpDebug;
   long unsigned int currentNvcn;
 };
 

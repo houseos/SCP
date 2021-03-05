@@ -16,13 +16,21 @@ ScpDebug::ScpDebug()
 void ScpDebug::println(logClass_t logClass, String debugString)
 {
 #ifdef DEBUG
-    Serial.println(debugString);
+    String indent = "";
+    for(int i = 0; i < logClass; i++){
+        indent = indent += " ";
+    }
+    Serial.println(indent + debugString);
 #endif
 }
 
 void ScpDebug::print(logClass_t logClass, String debugString)
 {
 #ifdef DEBUG
-    Serial.print(debugString);
+    String indent = "";
+    for(int i = 0; i < logClass; i++){
+        indent = indent += " ";
+    }
+    Serial.print(indent + debugString);
 #endif
 }

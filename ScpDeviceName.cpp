@@ -15,12 +15,15 @@ ScpDeviceName::ScpDeviceName()
 
 void ScpDeviceName::writeDeviceName(String deviceName)
 {
-    scpDebug.println(scpDebug.password, "    ScpDeviceName.writeDeviceName: Setting " + deviceName + " as new device name");
+    scpDebug.println(scpDebug.deviceName, "ScpDeviceName.writeDeviceName: Setting " + deviceName + " as new device name");
     scpEeprom.setDeviceName(deviceName);
+    //verify that name was set correctly
+    if (readDeviceName() != deviceName){
+        scpDebug.println(scpDebug.deviceName, "ScpDeviceName::writeDeviceName: failed to write name correctly.");
+    }
 }
 
 String ScpDeviceName::readDeviceName()
 {
-
     return scpEeprom.getDeviceName();
 }

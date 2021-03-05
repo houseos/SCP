@@ -71,14 +71,14 @@ public:
   String createResponseSecurityPwChange(String deviceID, String numberOfPasswordChanges, String result);
 
   /**
-   * @brief Create a Response Security Name Change string
+   * @brief Create a Response Security Rename string
    * 
    * @param deviceID 
    * @param deviceName
    * @param result 
    * @return String 
    */
-  String createResponseSecurityNameChange(String deviceID, String deviceName, String result);
+  String createResponseSecurityRename(String deviceID, String deviceName, String result);
 
   /**
    * @brief Create a Response Security Wifi Config string

@@ -77,7 +77,7 @@ public:
   /**
    * @brief 
    * 
-   * @return password 
+   * @param password 
    */
   void setPassword(String password);
 

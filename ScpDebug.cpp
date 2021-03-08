@@ -19,7 +19,7 @@ void ScpDebug::println(logClass_t logClass, String debugString)
     String indent = "";
     for (int i = 0; i < logClass; i++)
     {
-        indent = indent += " ";
+        indent += " ";
     }
     Serial.println(indent + debugString);
 #endif

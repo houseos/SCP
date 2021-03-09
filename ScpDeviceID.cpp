@@ -9,18 +9,19 @@ Copyright (C) 2018 Benjamin Schilling
 
 #include "ScpDeviceID.h"
 
-ScpDeviceID::ScpDeviceID() {
+ScpDeviceID::ScpDeviceID()
+{
 }
 
 String ScpDeviceID::readDeviceID()
 {
-return scpEeprom.getDeviceId();
+  return scpEeprom.getDeviceId();
 }
 
 void ScpDeviceID::setDeviceID()
 {
   char buffer[17];
-  scpDebug.println(scpDebug.deviceId, "    ScpDeviceID:setDeviceID: Mac Addresss: for device ID: " + WiFi.macAddress());
+  scpDebug.println(scpDebug.deviceId, "ScpDeviceID:setDeviceID: Mac Addresss: for device ID: " + WiFi.macAddress());
   WiFi.macAddress().toCharArray(buffer, 17);
 
   int seed;
@@ -34,22 +35,21 @@ void ScpDeviceID::setDeviceID()
   {
     deviceID += random(0, 9);
   }
-  scpDebug.println(scpDebug.deviceId, "    ScpDeviceID:setDeviceID: Random device id: " + deviceID);
+  scpDebug.println(scpDebug.deviceId, "ScpDeviceID:setDeviceID: Random device id: " + deviceID);
 
   scpEeprom.setDeviceId(deviceID);
   scpEeprom.setIsDeviceIdSet();
 #ifdef DEBUG
   if (!isDeviceIDSet())
   {
-    scpDebug.println(scpDebug.deviceId, "  ScpDeviceID:setDeviceID: error - device id setting failed.");
+    scpDebug.println(scpDebug.deviceId, "ScpDeviceID:setDeviceID: error - device id setting failed.");
   }
   deviceID = readDeviceID();
-  scpDebug.println(scpDebug.deviceId, "    ScpDeviceID:setDeviceID:  DeviceID: " + deviceID);
+  scpDebug.println(scpDebug.deviceId, "ScpDeviceID:setDeviceID:  DeviceID: " + deviceID);
 #endif
-
 }
 
 bool ScpDeviceID::isDeviceIDSet()
 {
- return scpEeprom.isDeviceIdSet();
+  return scpEeprom.isDeviceIdSet();
 }

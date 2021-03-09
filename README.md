@@ -9,6 +9,73 @@ The SCP Arduino library uses the rBase64 library and esp8266 core libraries.
 
 They can be found in the repositories described in the library.json file.
 
+## Installation
+
+To install the library copy it into your Arduino Libraries directory.
+
+## Integrating SCP
+
+We made integrating SCP as easy as possible.
+
+Several examples of successful integrations can be found in the [scp-devices](https://github.com/HouseOS/scp-devices) repository.
+
+The following Arduino Sketch outlines how the library can be included.
+
+```cpp
+// First include the SCP library and create a SCP object
+#include <SCP.h>
+SCP scp;
+//To register function pointers include the std::placeholders namespace
+using namespace std::placeholders;
+
+void setup(void)
+{
+  pinMode(D5, OUTPUT);
+  pinMode(D6, OUTPUT);
+  Serial.begin(115200);
+  Serial.println("");
+
+// Initialize the SCP object
+// First parameter is the device type
+// Second parameters contains all control actions
+// Third parameter contains all measure actions (in this case: none)
+  scp.init("shutter-control", "\"up\",\"down\",\"stop\"", "");
+// Register your control functions.
+  scp.registerControlFunction(std::bind(control, _1));
+  scp.registerMeasureFunction(std::bind(measure, _1));
+}
+
+// In the control function define all supported actions, 
+// each action is identified by a unique string
+void control(String action){
+  Serial.println("control: " + action);
+  if(action == "up"){
+    digitalWrite(D5, 1);
+    digitalWrite(D6, 0);
+  }
+  if(action == "down"){
+    digitalWrite(D6, 1);
+    digitalWrite(D5, 0); 
+  }
+  if(action == "stop"){
+    digitalWrite(D5, 0);
+    digitalWrite(D6, 0); 
+  }
+}
+
+
+double measure(String action){
+  Serial.println("No measure action available.");
+}
+
+void loop(void)
+{
+// In the loop call the handleClient 
+// function to listen for HTTP requests
+  scp.handleClient();
+}
+```
+
 ## License
 
 SPDX-License-Identifier: GPL-3.0-or-later

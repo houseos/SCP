@@ -26,10 +26,7 @@ String ScpCrypto::decodeAndDecrypt(String payload, int payloadLength,
   memcpy(correctPayload, decodedPayload, payloadLength);
   for (int i = 0; i < payloadLength; i++)
   {
-    Serial.print("Element Payload ");
-    Serial.print(i, DEC);
-    Serial.print(": ");
-    Serial.println(correctPayload[i], HEX);
+    scpDebug.println(scpDebug.crypto, "ScpCrypto::decodeAndDecrypt: Element Payload " + String(i, DEC) + ": " + String(correctPayload[i], HEX));
   }
 
   // decode mac
@@ -40,10 +37,7 @@ String ScpCrypto::decodeAndDecrypt(String payload, int payloadLength,
   memcpy(correctMac, decodedMac, MAC_LENGTH);
   for (int i = 0; i < MAC_LENGTH; i++)
   {
-    Serial.print("Element Mac ");
-    Serial.print(i, DEC);
-    Serial.print(": ");
-    Serial.println(correctMac[i], HEX);
+    scpDebug.println(scpDebug.crypto, "ScpCrypto::decodeAndDecrypt: Element Mac " + String(i, DEC) + ": " + String(correctMac[i], HEX));
   }
 
   // key
@@ -83,10 +77,8 @@ String ScpCrypto::getNVCN()
 
 bool ScpCrypto::checkNVCN(String nvcn)
 {
-  Serial.print("Expected NVCN:");
-  Serial.println(currentNvcn);
-  Serial.print("Received NVCN:");
-  Serial.println(nvcn);
+
+  scpDebug.println(scpDebug.crypto, "ScpCrypto::checkNVCN: Expected NVCN: " + String(currentNvcn) + "Received NVCN: " + String(nvcn));
   if (currentNvcn == nvcn.toInt())
   {
     return true;

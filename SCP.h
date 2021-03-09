@@ -14,8 +14,8 @@ Copyright (C) 2018 Benjamin Schilling
 #include <WiFiClient.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266WebServer.h>
-
 #include "ScpDeviceID.h"
+#include "ScpDeviceName.h"
 #include "ScpPassword.h"
 #include "ScpCrypto.h"
 #include "ScpResponseFactory.h"
@@ -35,8 +35,10 @@ public:
   /**
    * @brief 
    * 
+   * @param deviceType The type of device
+   * @param actions String containing a list of ',' separated actions
    */
-  void init(String deviceType);
+  void init(String deviceType, String controlActions, String measureActions);
 
   /**
    * @brief 
@@ -50,6 +52,7 @@ public:
 private:
   ScpPassword scpPassword;
   ScpDeviceID scpDeviceID;
+  ScpDeviceName scpDeviceName;
   ScpCrypto scpCrypto;
   ScpResponseFactory scpResponseFactory;
   ScpEepromController scpEepromController;
@@ -60,6 +63,9 @@ private:
   ESP8266WebServer *server;
   ESP8266WiFiMulti wifiMulti;
   String DEFAULT_PW = "1234567890123456";
+  // List of supported actions, separated by ','
+  String measureActions;
+  String controlActions;
 
   std::function<void(String)> controlFunction;
   std::function<double(String)> measureFunction;

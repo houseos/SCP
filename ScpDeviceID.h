@@ -15,10 +15,6 @@ Copyright (C) 2018 Benjamin Schilling
 #include "ScpDebug.h"
 #include "ScpEepromController.h"
 
-#define EEPROM_OFFSET 18
-#define DEVICEID_LENGTH 16
-#define DEVICEID_SET_POS 17
-
 class ScpDeviceID
 {
 
@@ -51,16 +47,15 @@ public:
   String readDeviceID();
 
 private:
-
   /**
    * @brief 
    * 
    * @return void 
    */
   void writeDeviceID(String deviceID);
-  
- ScpEepromController scpEeprom;
- ScpDebug scpDebug;
+
+  ScpEepromController scpEeprom;
+  ScpDebug scpDebug;
 };
 
 #endif

@@ -23,7 +23,7 @@ public:
     ScpDecode();
 
     uint8_t *base64DecodeToInt(String base64String);
-    char* base64DecodeToChar(String base64String);
+    char *base64DecodeToChar(String base64String);
     String base64Encode(uint8_t *payload);
 };
 

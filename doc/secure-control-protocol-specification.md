@@ -79,7 +79,7 @@ package "Control Device" {
 }
 
 client -(0- server: /secure-control
-client -(0- server: /secure-control-discover-hello
+client -(0- server: /secure-control/discover-hello
 
 @enduml
 ```
@@ -87,7 +87,7 @@ client -(0- server: /secure-control-discover-hello
 The control device typically is **ESP8266** based embedded system that is attached to an actor or a sensor.
 It consists of the **Application Logic** for interfacing with the attached actor or sensor and the **SCP Server**.
 The **SCP Server** is a webserver serving two *HTTP* ressources.
-The `/secure-control-discover-hello` ressource responds with general information about the device that is only protected with an **HMAC**. 
+The `/secure-control/discover-hello` ressource responds with general information about the device that is only protected with an **HMAC**. 
 The `/secure-control` ressource is used for all other actions.
 Requests for this ressource have to contain certain encrypted query parameters.
 The parameters are protected by an **HMAC**.
@@ -142,7 +142,7 @@ client -> server : Connect to wifi
 
 server --> client : Assign IP address
 
-client -> server : Get device information from /secure-control-discover-hello
+client -> server : Get device information from /secure-control/discover-hello
 
 server --> client : Send discover-response
 
@@ -197,7 +197,7 @@ end note
 
 The **Client Device** acts as a managing device and is capable of discovering devices in the local subnet network range. 
 
-To do this the client requests the secure-control-discover-hello ressource of each IP addresses of the configured IP address range. 
+To do this the client requests the `/secure-control/discover-hello` ressource of each IP addresses of the configured IP address range. 
 
 The client stores the IP addresses of all devices which respond with a HTTP response 200 OK with information in the body. 
 
@@ -218,16 +218,16 @@ participant ":Client Device" as client
 client -> client : Get IP address & subnet mask
 client -> client : Get network address
 
-client -> server1 : Connect to /secure-control-discover-hello ressource
+client -> server1 : Connect to /secure-control/discover-hello ressource
 server1 --> client : Respond with HTTP 200 OK containing discover-response 
 
-client -> device : Connect to /secure-control-discover-hello ressource
+client -> device : Connect to /secure-control/discover-hello ressource
 device --> client : Connection refused
 
-client -> server2 : Connect to /secure-control-discover-hello ressource
+client -> server2 : Connect to /secure-control/discover-hello ressource
 server2 --> client : Respond with HTTP 200 OK containing discover-response 
 
-client -> webserver : Connect to /secure-control-discover-hello ressource
+client -> webserver : Connect to /secure-control/discover-hello ressource
 webserver --> client : Respond with HTTP 404 Not found
 
 @enduml
@@ -426,7 +426,10 @@ hmac = SHA512_HMAC("discover-response" + device ID + device Type + IP Address
 | --------------------- | ---------------------------------------- |
 | type                  | discover-response                        |
 | deviceId              | device ID (16 byte)                      |
+| deviceName            | device name                              |
 | deviceType            | device type                              |
+| controlActions        | array of supported control actions       |
+| measureActions        | array of supported measure actions       |
 | currentPasswordNumber | number of password changes, 0 is default |
 | hmac                  | Keyed-Hashed Massage Authentication Code |
 Example:
@@ -434,7 +437,16 @@ Example:
 {
     "type" : "discover-response",
     "deviceId" : "device ID",
+    "deviceName" : "device Name",
     "deviceType" : "secure-controller",
+    "controlActions": [
+        "<action 1>",
+        "<action 2>"
+    ],
+    "measureActions": [
+        "<action 1>",
+        "<action 2>"
+    ],
     "currentPasswordNumber" : "<number of password changes>",
     "hmac" : "<Keyed-Hash Massage Authentication Code>"
 }
@@ -497,7 +509,34 @@ Example:
     "currentPasswordNumber" : "<number of password changes>",
     "result" : "<done / error>"
 }
+``` 
 
+#### 6.3.2 security-name-change
+
+The security-name-change message tells the device to change it's old device name to the new one.
+
+Additionally the deviceID provided in the payload must match the configured device ID.
+
+`plain text = <salt> + ":" + "security-name-change" + ":" + <device ID> + ":" + <NVCN> + ":" + <new name>`
+
+The response payload is a JSON representation of the following data:
+
+| Key        | Possible values      |
+| ---------- | -------------------- |
+| type       | security-name-change |
+| deviceId   | device ID            |
+| deviceName | device name          |
+| result     | done / error         |
+
+Example:
+```json
+{
+
+    "type" : "security-name-change",
+    "deviceId" : "device ID",
+    "deviceName" : "device name",
+    "result" : "<done / error>"
+}
 ``` 
 
 ##### 2.7.2.3 security-wifi-config
